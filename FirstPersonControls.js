@@ -2,7 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-THREE.FirstPersonControls = function(camera) 
+THREE.FirstPersonControls = function(camera, borders) 
 {
 	// Указатель на себя
 	var scope = this;
@@ -12,12 +12,13 @@ THREE.FirstPersonControls = function(camera)
 
     // Настройки мира
 	var coordDivisor = 1000; // Во сколько раз уменьшен мир
+	var worldBorders = new THREE.Vector4(borders.x, borders.y, borders.z, borders.w); // x1, z1, x2, z2
 
     // Настройки управления
 	var mouseSensitivity = 0.004; // Чувствительность мыши
 	
     // Настройки игрового процесса
-	var ggHeight  = 50;             // Высота главного героя
+	var ggHeight  = 80;             // Высота главного героя
 	var walkSpeed = 0.36;           // Скорость ходьбы
 	var runSpeed  = walkSpeed * 3;  // Скорость бега
 	var jumpPower = 20;             // Сила прыжка
@@ -188,6 +189,12 @@ THREE.FirstPersonControls = function(camera)
 			}
 		}
 		
+		// Не даем зайти за пределы мира
+		if(yawObject.position.x < worldBorders.x) yawObject.position.x = worldBorders.x;
+		if(yawObject.position.x > worldBorders.z) yawObject.position.x = worldBorders.z;
+		if(yawObject.position.z < worldBorders.y) yawObject.position.z = worldBorders.y;
+		if(yawObject.position.z > worldBorders.w) yawObject.position.z = worldBorders.w;
+
 		// Если мы на полу, не давать падать
 		/*if ( yawObject.position.y < ggHeight / coordDivisor) 
 		{

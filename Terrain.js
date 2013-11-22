@@ -10,7 +10,7 @@ var Terrain = function()
 		var geometry = new THREE.PlaneGeometry(3, 3, 30, 30);
 		for(var i = 0; i < geometry.vertices.length; i++)
 		{
-			geometry.vertices[i].z = - Math.random()/20.0;
+			geometry.vertices[i].z = Math.random()/35.0 - 0.045;
 		}
       	terrain = new THREE.Mesh(geometry, material);
       	terrain.rotation.x = - 3.14 / 2;

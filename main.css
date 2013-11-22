@@ -69,3 +69,13 @@ a:hover
 	padding-top: 10px;
 	margin-right: -30px;
 }
+
+#oput
+{
+	background: linear-gradient(0deg, #888844 0%, #888844 0%, #444444 10%, #444444 100%);
+}
+
+#live
+{
+	background: linear-gradient(0deg, #448844 0%, #448844 100%, #884444 10%, #884444 100%);
+}

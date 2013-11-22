@@ -4,6 +4,8 @@ var Surface = function()
 {
 	// Все кординаты загоняются в один предел. Делятся на значение переменной max.
 	var max = 1000;
+	// Границы мира
+	var borders = new THREE.Vector4(-1.0, -1.0, 1.0, 1.0);
 
 	// Переменная, отвечающая за то, открыто меню, или нет
 	var prioritet = 0;
@@ -17,6 +19,7 @@ var Surface = function()
 
 	var skyBox;
 
+	// Массивы объектов
 	var objects = [];
 	var humans = [];
 	var trees = [];
@@ -26,10 +29,13 @@ var Surface = function()
 	count_trees = 40;
 	count_houses = 10;
 	
+	// Размеры мини-карты
 	var mapWidth = 200;
 	var mapHeight = 200;
 	
+	// Идентификатор процесса рендеринга
 	var id;
+
 	this.setPrioritet = function(serArg)
 	{
 		prioritet = serArg;
@@ -63,7 +69,7 @@ var Surface = function()
 		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.000001, 5);
 		renderer = new THREE.WebGLRenderer({'antialias':true});  
 		
-		controls = new THREE.FirstPersonControls(camera);
+		controls = new THREE.FirstPersonControls(camera, borders);
 		scene.add(controls.getObject());
 		
 		mapCamera = new THREE.OrthographicCamera(
@@ -112,7 +118,7 @@ var Surface = function()
 			}
 			trees[trees.length - 1].getMesh(1).position.x = (getRandomInt(0, 300) - 150) / 100.0;
 			trees[trees.length - 1].getMesh(1).position.z = (getRandomInt(0, 50)  - 150) / 100.0;
-			trees[trees.length - 1].getMesh(1).position.y = 0.02;
+			trees[trees.length - 1].getMesh(1).position.y = -0.015;
 			
 			trees[trees.length - 1].getMesh(0).position.x = trees[trees.length - 1].getMesh(1).position.x;
 			trees[trees.length - 1].getMesh(0).position.z = trees[trees.length - 1].getMesh(1).position.z;
@@ -128,7 +134,7 @@ var Surface = function()
 			
 			houses[houses.length - 1].getMesh(1).position.x = (getRandomInt(0, 50)  + 100) / 100.0;
 			houses[houses.length - 1].getMesh(1).position.z = (- 150 + i * 30) / 100.0;
-			houses[houses.length - 1].getMesh(1).position.y = 0.04;
+			houses[houses.length - 1].getMesh(1).position.y = 0.01;
 			
 			houses[houses.length - 1].getMesh(0).position.x = houses[houses.length - 1].getMesh(1).position.x;
 			houses[houses.length - 1].getMesh(0).position.z = houses[houses.length - 1].getMesh(1).position.z;
@@ -186,12 +192,15 @@ var Surface = function()
 	this.stop_render = function()
 	{
 		cancelAnimationFrame(id);
+		renderer.domElement.remove();
 	};
 	
 };
 
 var surface;
 var sound;
+var full_live = 100;					// сколько жизни
+var none_opt = 0;						// сколько опыта
 
 function pointerLockChange() 
 {
@@ -235,11 +244,10 @@ function restart()
 	
 	surface.stop_render();
 	
-	lockPointer();
-	
 	surface = new Surface();
 	surface.start();
-	
+
+	lockPointer();
 }
 
 $(document).ready(function() 
@@ -251,4 +259,7 @@ $(document).ready(function()
 	
 	sound = new Sound(['audio/1.ogg']);
 	//sound.play();
+
+	$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + none_opt + '%, #444444 0%, #444444 100%');
+	$('#live').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + full_live + '%, #444444 0%, #444444 100%');
 });

@@ -84,8 +84,7 @@ var Human = function()
 		human.translateY(velocity.y); 
 		human.translateZ(velocity.z);
 		
-		human_met.translateX(velocity.x);
-		human_met.translateY(velocity.y); 
-		human_met.translateZ(velocity.z);
+		human_met.position.x = human.position.x;
+		human_met.position.z = human.position.z;
 	};
 };
