@@ -18,10 +18,10 @@ THREE.FirstPersonControls = function(camera, borders)
 	var mouseSensitivity = 0.004; // Чувствительность мыши
 	
     // Настройки игрового процесса
-	var ggHeight  = 80;             // Высота главного героя
-	var walkSpeed = 0.36;           // Скорость ходьбы
+	var ggHeight  = 40;             // Высота главного героя
+	var walkSpeed = 0.24;           // Скорость ходьбы
 	var runSpeed  = walkSpeed * 3;  // Скорость бега
-	var jumpPower = 20;             // Сила прыжка
+	var jumpPower = 10;             // Сила прыжка
 	var energy    = 1000;           // Запас энергии
 	
 	// Текущие показатели
@@ -39,19 +39,40 @@ THREE.FirstPersonControls = function(camera, borders)
 	var canJump      = false;
 	var isRunning    = false;
 	
+	var dista = 0;
+	var znack = 4;
+	
 	// Рабочие переменные
 	var pitchObject = new THREE.Object3D();
 	pitchObject.add(camera);
 
 	var yawObject = new THREE.Object3D();
 	yawObject.add(pitchObject);
-	yawObject.position.y = ggHeight / coordDivisor;
+	yawObject.position.y = 2 * ggHeight / coordDivisor;
 	
 	
 	var ray = new THREE.Raycaster();
 	ray.ray.direction.set(0, -1, 0);
 	
 	projector = new THREE.Projector();
+	
+	var texture = THREE.ImageUtils.loadTexture('textures/humans/l_hand.png');
+	texture.anisotropy = 16;
+	var material = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomLeft  } );
+	var l_hand = new THREE.Sprite( material );
+	l_hand.position.set( 50, window.innerHeight + 180, 0 );
+	l_hand.scale.set( 200, 256, 1.0 ); // imageWidth, imageHeight
+	
+	pitchObject.add(l_hand);
+	
+	texture = THREE.ImageUtils.loadTexture('textures/humans/r_hand.png');
+	texture.anisotropy = 16;
+	material = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomRight} );
+	var r_hand = new THREE.Sprite( material );
+	r_hand.position.set( window.innerWidth - 100, window.innerHeight + 180, 0 );
+	r_hand.scale.set( 200, 256, 1.0 ); // imageWidth, imageHeight
+	
+	pitchObject.add(r_hand);
 	
 	var onMouseMove = function(event) 
 	{
@@ -230,6 +251,16 @@ THREE.FirstPersonControls = function(camera, borders)
 		if (moveLeft) velocity.x -= speed * delta / coordDivisor;
 		if (moveRight) velocity.x += speed * delta / coordDivisor;
 		
+		if(moveForward||moveBackward||moveLeft||moveRight)
+		{
+			dista += znack;
+			if(isRunning) dista += znack;
+			if(dista > 32) dista = 32;
+			if(dista < 0) dista = 0;
+			if(dista > 31 || dista < 1) znack = - znack;
+			l_hand.position.set( 50, window.innerHeight + 180 - dista, 0 );
+			r_hand.position.set( window.innerWidth - 100, window.innerHeight + 180 + dista, 0 );
+		}
 		// Использованная энергия не может быть отрицательной
 		usedEnergy = Math.max(0, usedEnergy);
 		

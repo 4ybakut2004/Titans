@@ -24,15 +24,19 @@ var Human = function(humanType)
 		switch(humanType)
 		{
 			case HumanTypes.Soldier:
-				texURL = 'textures/humans/3.png';
-				height = 0.02;
+				texURL = 'textures/humans/human.png';
+				height = 0.015;
 				break;
 		}
 
 		var texture = THREE.ImageUtils.loadTexture(texURL);
-		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff});
+		texture.anisotropy = 16;
+		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true});
 		human = new THREE.Sprite(material);
-		human.scale.set( 0.0232, 0.04, 1.0 );
+		human.scale.set( height / 2, height, 1.0 );
+		
+		human.material.uvOffset.x = 0.0;
+		human.material.uvScale.x = 0.036;
 		
 		var material_met = new THREE.MeshBasicMaterial({color: 0xff0000});
 		var geometry_met = new THREE.PlaneGeometry(0.1, 0.1);
@@ -51,14 +55,14 @@ var Human = function(humanType)
 	this.setYPositionAfterFall = function(nullPoint)
 	{
 		velocity.y = 0;
-		human.position.y = nullPoint + height;
+		human.position.y = nullPoint + height / 2;
 	};
 	
 	this.collision = function(objects)
 	{	
 		// Достаем позицию
-		var copy = human.position;
-		copy.y += 0.0;
+		var copy = new THREE.Vector3(human.position.x, human.position.y, human.position.z);
+		copy.y += 1.0;
 		
 		ray.ray.origin.copy(copy);
 		// Ищем пересечения с предметами
@@ -70,7 +74,7 @@ var Human = function(humanType)
 			var distance = intersections[0].distance;
 
 			// Если под нами препятствие, и мы падаем вниз, то не давать падать
-			if (distance > 0 && distance < height && velocity.y <= 0) 
+			if (distance > 0 && distance < height / 2 + 1.0 && velocity.y <= 0) 
 			{
 				this.setYPositionAfterFall(intersections[0].point.y);
 			}
@@ -81,15 +85,22 @@ var Human = function(humanType)
 	{	
 		delta *= 0.1;
 		
+		human.material.uvOffset.x += 0.125;
+		if(human.material.uvOffset.x > 0.875)
+		{
+		    human.material.uvOffset.x = 0.0;
+		}
+		
 		var v = new THREE.Vector3(camera.position.x, 0, camera.position.z);
 		v.x -= human.position.x;
 		v.z -= human.position.z;
 		
+		if(Math.abs(v.z) < 0.01 && Math.abs(v.x) < 0.01) return false;
 		v = v.normalize();
 
 		// Постоянно падаем
-		velocity.x = delta * v.x * 0.0005;
-		velocity.z = delta * v.z * 0.0005;
+		velocity.x = v.x * 0.0005 * delta;
+		velocity.z = v.z * 0.0005 * delta;
 		velocity.y -= 0.00025 * delta;
 
 		// Двигаем объект
@@ -99,5 +110,6 @@ var Human = function(humanType)
 		
 		human_met.position.x = human.position.x;
 		human_met.position.z = human.position.z;
+		return true;
 	};
 };

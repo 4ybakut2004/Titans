@@ -9,7 +9,7 @@ var Terrain = function()
 		texture.wrapT = THREE.RepeatWrapping;
 		texture.repeat.set( 30, 30 );
       	texture.anisotropy = 16;
-      	var material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture});
+      	var material = new THREE.MeshLambertMaterial({color: 0xffffff, map: texture});//MeshBasicMaterial({color: 0xffffff, map: texture});
 		var geometry = new THREE.PlaneGeometry(3, 3, 30, 30);
 		for(var i = 0; i < geometry.vertices.length; i++)
 		{
@@ -18,6 +18,8 @@ var Terrain = function()
 		}
       	terrain = new THREE.Mesh(geometry, material);
       	terrain.rotation.x = - 3.14 / 2;
+		terrain.castShadow = false;
+		terrain.receiveShadow = true;
 	};
 
 	this.getMesh = function()

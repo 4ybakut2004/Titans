@@ -29,11 +29,16 @@ var Surface = function()
 	
 	count_humans = 10;
 	count_trees = 40;
-	count_houses = 10;
+	count_houses = 20;
 	
 	// Размеры мини-карты
 	var mapWidth = 200;
 	var mapHeight = 200;
+	
+	// Свет
+	var dirLight;
+	var ambLight;
+	var spotLight;
 	
 	// Идентификатор процесса рендеринга
 	var id;
@@ -41,7 +46,6 @@ var Surface = function()
 	this.setPrioritet = function(serArg)
 	{
 		prioritet = serArg;
-		time = Date.now();
 	};
 
 	var getRandomInt = function(min, max)
@@ -77,16 +81,99 @@ var Surface = function()
 	    var z = window.innerHeight/window.innerWidth;
 	};
 
+	// Здесь задается весь свет на карте
+	var lightInit = function()
+	{
+		spotLight = new THREE.SpotLight(0xFFDEAD, 0.8);
+		spotLight.position.set(-1.7, 1.5, 5);
+		spotLight.target.position.set(1, -0.3, -3);	
+		
+		spotLight.shadowCameraNear = 0.1;
+		spotLight.shadowCameraFar = 7;
+		
+		spotLight.shadowMapBias = 0.003885;
+		spotLight.shadowMapWidth = 1024;
+		spotLight.shadowMapHeight = 1024;
+		
+		spotLight.castShadow = true;
+		// объекты должны отбрасывать тень
+		spotLight.shadowDarkness = 0.5;
+		//spotLight.shadowCameraVisible = true;		
+		
+		dirLight = new THREE.DirectionalLight(0xFAFAD2, 0.9);
+		dirLight.position.set(1.7, 4.5, -5);
+		dirLight.target.position.set(1, 0, -1);	
+			
+	}
 
+	// Создает человечка заданного типа
+	var spawnHuman = function(humanType)
+	{
+		var human = new Human(humanType)
+		humans.push(human);
+		human.getMesh(1).position.x = (getRandomInt(40, 260) - 150) / 100.0;
+		human.getMesh(1).position.z = (getRandomInt(40, 260) - 150) / 100.0;
+		
+		human.getMesh(0).position.x = human.getMesh(1).position.x;
+		human.getMesh(0).position.z = human.getMesh(1).position.z;
+		human.getMesh(0).position.y = 0.4;
+		
+		scene.add(human.getMesh(1));
+		scene.add(human.getMesh(0));
+	};
+
+	// Создает дерево
+	var spawnTree = function(treeType)
+	{
+		trees.push(new Trees(treeType));
+		trees[trees.length - 1].getMesh(1).position.x = (getRandomInt(40, 260) - 150) / 100.0;
+		trees[trees.length - 1].getMesh(1).position.z = (getRandomInt(10, 50)  - 150) / 100.0;
+		trees[trees.length - 1].getMesh(1).position.y = -0.015;
+		
+		trees[trees.length - 1].getMesh(0).position.x = trees[trees.length - 1].getMesh(1).position.x;
+		trees[trees.length - 1].getMesh(0).position.z = trees[trees.length - 1].getMesh(1).position.z;
+		trees[trees.length - 1].getMesh(0).position.y = 0.4;
+		
+		trees[trees.length - 1].update(Date.now() - time, controls.getObject());
+		trees[trees.length - 1].collision(objects);
+		
+		scene.add(trees[trees.length - 1].getMesh(1));
+		scene.add(trees[trees.length - 1].getMesh(0));
+	};
+
+	// Создает дом
+	var pred_houses = 0;
+	var spawnHouse = function(houseType, number)
+	{
+		houses.push(new Houses(houseType));
+		
+		houses[houses.length - 1].getMesh(1).position.x = (- 140 + number * (300.0/count_houses - 1)) / 100.0;
+		houses[houses.length - 1].getMesh(1).position.z = (getRandomInt(0, 10) + 100) / 100.0;
+		if(houses[houses.length - 1].getMesh(1).position.z != pred_houses) houses[houses.length - 1].getMesh(1).position.z += 10.0/100.0;
+		
+		pred_houses = houses[houses.length - 1].getMesh(1).position.z;
+		
+		houses[houses.length - 1].getMesh(1).position.y = - 0.074 + 0.05;
+		
+		houses[houses.length - 1].getMesh(0).position.x = houses[houses.length - 1].getMesh(1).position.x;
+		houses[houses.length - 1].getMesh(0).position.z = houses[houses.length - 1].getMesh(1).position.z;
+		houses[houses.length - 1].getMesh(0).position.y = 0.4;
+		
+		scene.add(houses[houses.length - 1].getMesh(1));
+		scene.add(houses[houses.length - 1].getMesh(0));
+	};
+	
+	// Тут вся инициализация
 	var init = function()
 	{
 		scene = new THREE.Scene(); 
-		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.000001, 5);
+		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.0001, 7);
 		renderer = new THREE.WebGLRenderer({'antialias':true});  
 		
 		controls = new THREE.FirstPersonControls(camera, borders);
 		scene.add(controls.getObject());
 		
+		// Камера миникарты
 		mapCamera = new THREE.OrthographicCamera(
 		window.innerWidth / -1000,		// Left
 		window.innerWidth / 1000,		// Right
@@ -100,10 +187,24 @@ var Surface = function()
 	
 		time = Date.now();
 		
+		// Настройки рендера
 		renderer.setSize(window.innerWidth, window.innerHeight); 
+		
+		renderer.shadowMapEnabled = true;
+		renderer.shadowMapSoft = true;
+		renderer.gammaInput = true;
+		renderer.gammaOutput = true;
+		renderer.physicallyBasedShading = true;
+		renderer.shadowMapCullFace = THREE.CullFaceBack;
+		
 		renderer.autoClear = false;
 	    $(document.body).append(renderer.domElement);
 
+		lightInit();
+		
+		scene.add(spotLight);
+		scene.add(dirLight);
+		
 	    skyBox = new SkyBox('skybox/');
 		scene.add(skyBox.getMesh());
 		
@@ -111,58 +212,27 @@ var Surface = function()
 		scene.add(floor.getMesh());
 		objects.push(floor.getMesh());
 		
+		// Начальный состав людской армии
 		for(var i = 0; i < count_humans; i++)
 		{
-			humans.push(new Human(HumanTypes.Soldier));
-			humans[humans.length - 1].getMesh(1).position.x = (getRandomInt(40, 260) - 150) / 100.0;
-			humans[humans.length - 1].getMesh(1).position.z = (getRandomInt(40, 260) - 150) / 100.0;
-			
-			humans[humans.length - 1].getMesh(0).position.x = humans[humans.length - 1].getMesh(1).position.x;
-			humans[humans.length - 1].getMesh(0).position.z = humans[humans.length - 1].getMesh(1).position.z;
-			humans[humans.length - 1].getMesh(0).position.y = 0.4;
-			
-			scene.add(humans[humans.length - 1].getMesh(1));
-			scene.add(humans[humans.length - 1].getMesh(0));
+			spawnHuman(HumanTypes.Soldier);
 		}
 		
 		for(var i = 0; i < count_trees; i++)
 		{
 			if(i < (count_trees)/ 2)
 			{
-				trees.push(new Trees(0));
+				spawnTree(0);
 			}
 			else
 			{
-				trees.push(new Trees(1));
+				spawnTree(1);
 			}
-			trees[trees.length - 1].getMesh(1).position.x = (getRandomInt(40, 260) - 150) / 100.0;
-			trees[trees.length - 1].getMesh(1).position.z = (getRandomInt(10, 50)  - 150) / 100.0;
-			trees[trees.length - 1].getMesh(1).position.y = -0.015;
-			
-			trees[trees.length - 1].getMesh(0).position.x = trees[trees.length - 1].getMesh(1).position.x;
-			trees[trees.length - 1].getMesh(0).position.z = trees[trees.length - 1].getMesh(1).position.z;
-			trees[trees.length - 1].getMesh(0).position.y = 0.4;
-			
-			trees[trees.length - 1].collision(objects);
-			
-			scene.add(trees[trees.length - 1].getMesh(1));
-			scene.add(trees[trees.length - 1].getMesh(0));
 		}
 		
 		for(var i = 0; i < count_houses; i++)
 		{
-			houses.push(new Houses(getRandomInt(0, 1)));
-			
-			houses[houses.length - 1].getMesh(1).position.x = (- 140 + i * (30 - 5)) / 100.0;
-			houses[houses.length - 1].getMesh(1).position.z = (getRandomInt(0, 40)  + 100) / 100.0;
-			houses[houses.length - 1].getMesh(1).position.y = - 0.074 + 0.1;
-			
-			houses[houses.length - 1].getMesh(0).position.x = houses[houses.length - 1].getMesh(1).position.x;
-			houses[houses.length - 1].getMesh(0).position.z = houses[houses.length - 1].getMesh(1).position.z;
-			houses[houses.length - 1].getMesh(0).position.y = 0.4;
-			
-			scene.add(houses[houses.length - 1].getMesh(1));
-			scene.add(houses[houses.length - 1].getMesh(0));
+			spawnHouse(getRandomInt(0, 1), i);
 		}
 		
 		$(window).bind( 'resize', onWindowResize);
@@ -174,19 +244,35 @@ var Surface = function()
 		id = requestAnimationFrame(render);		
 		
 		var delta = clock.getDelta() * 1000.0;
+		if(delta > 200) delta = 200;
+		console.log(delta);
 		if(prioritet>0)
 		{
+			// Обрабатываем движение главного героя
 			controls.update(delta);	
 			controls.collision(objects);
 
+			// Двигаем скайбокс вместе с камерой
 			skyBox.update(controls.getObject().position);
+
 			if(index > count_story)
+			// Обрабатываем поведение людей
 			for(var i = 0; i < humans.length; i++)
 			{
-				humans[i].update(delta, controls.getObject());
-				humans[i].collision(objects);
+				if(!humans[i].update(delta, controls.getObject()))
+				{
+					scene.remove(humans[i].getMesh(1));
+					scene.remove(humans[i].getMesh(0));
+					humans.splice(i, 1);
+					none_opt += 10;
+					$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + none_opt + '%, #444444 0%, #444444 100%');
+					if(none_opt == 100) none_opt = 0;
+					spawnHuman(HumanTypes.Soldier);
+				}
+				else humans[i].collision(objects);
 			}
 			
+			// Отрисовываем сцену
 			var w = window.innerWidth, h = window.innerHeight;
 
 			renderer.setViewport( 0, 0, w, h );
@@ -197,7 +283,6 @@ var Surface = function()
 			renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight );
 			renderer.render( scene, mapCamera );
 		}
-		
 	};
 
 	this.start = function()
@@ -211,7 +296,6 @@ var Surface = function()
 		cancelAnimationFrame(id);
 		renderer.domElement.remove();
 	};
-	
 };
 
 var surface;
@@ -221,6 +305,7 @@ var none_opt = 0;						// сколько опыта
 var count_story = 2;
 var index = 0;
 
+// Обработка захвата указателя ------------------------------------------------------------------
 function pointerLockChange() 
 {
 	if (document.mozPointerLockElement === elem || document.webkitPointerLockElement === elem)
@@ -261,6 +346,7 @@ function lockPointer()
                               elem.webkitRequestPointerLock;
     elem.requestPointerLock();
 }
+// --------------------------------------------------------------------------------------------
 
 function restart()
 {
@@ -281,8 +367,7 @@ $(document).ready(function()
 	$('#myModal').modal('show');
 	
 	sound = new Sound(['audio/1.ogg']);
-	//sound.play();
+	sound.play();
 
-	$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + none_opt + '%, #444444 0%, #444444 100%');
-	$('#live').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + full_live + '%, #444444 0%, #444444 100%');
+	$('#live').css('backgroundImage', 'linear-gradient(0deg, #448844 0%, #448844 ' + full_live + '%, #884444 0%, #884444 100%');
 });
