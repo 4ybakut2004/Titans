@@ -3,6 +3,9 @@ var Trees = function(type_tree)
 	var trees;
 	var trees_met;
 
+	var ray = new THREE.Raycaster();
+	ray.ray.direction.set(0, -1, 0);
+	
 	var generate = function()
 	{
 		switch(type_tree)
@@ -34,4 +37,23 @@ var Trees = function(type_tree)
 	};
 
 	generate();
+	
+	this.collision = function(objects)
+	{			
+		ray.ray.origin.copy(trees.position);
+		// Ищем пересечения с предметами
+		var intersections = ray.intersectObjects(objects);
+		
+		// Если есть пересечение, обрабатываем
+		if (intersections.length > 0) 
+		{
+			var distance = intersections[0].distance;
+
+			// Если под нами препятствие, и мы падаем вниз, то не давать падать
+			if (distance > 0 && distance < 0.07) 
+			{
+				trees.position.y = intersections[0].point.y + 0.07;
+			}
+		}
+	};
 };

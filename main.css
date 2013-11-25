@@ -79,3 +79,15 @@ a:hover
 {
 	background: linear-gradient(0deg, #448844 0%, #448844 100%, #884444 10%, #884444 100%);
 }
+
+.leaning
+{
+	position: absolute; 
+	width: 600px; 
+	height: 90px;
+	display: none;
+	border: double #8B4513 4px;
+	margin: 200px 0 0 400px;
+	padding: 7px;
+	background-color: #ffffff; 
+}

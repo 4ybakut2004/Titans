@@ -6,7 +6,7 @@ var HumanTypes =
 	Spy:     3
 };
 
-var Human = function()
+var Human = function(humanType)
 {
 	var human;
 	var human_met;
@@ -14,12 +14,25 @@ var Human = function()
 	var velocity   = new THREE.Vector3(0, 0, 0); // Направление скорости
 	var ray = new THREE.Raycaster();
 	ray.ray.direction.set(0, -1, 0);
+
+	// Характеристики Юнита
+	var height = 0;
 	
-	var generate = function()
+	var generate = function(humanType)
 	{
-      	var material = new THREE.MeshBasicMaterial({color: 0xffffff});
-		var geometry = new THREE.CubeGeometry(0.1, 0.1, 0.1);
-      	human = new THREE.Mesh(geometry, material);
+		var texURL = '';
+		switch(humanType)
+		{
+			case HumanTypes.Soldier:
+				texURL = 'textures/humans/3.png';
+				height = 0.02;
+				break;
+		}
+
+		var texture = THREE.ImageUtils.loadTexture(texURL);
+		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff});
+		human = new THREE.Sprite(material);
+		human.scale.set( 0.0232, 0.04, 1.0 );
 		
 		var material_met = new THREE.MeshBasicMaterial({color: 0xff0000});
 		var geometry_met = new THREE.PlaneGeometry(0.1, 0.1);
@@ -33,12 +46,12 @@ var Human = function()
 		else return human_met;
 	};
 	
-	generate();
+	generate(humanType);
 	
 	this.setYPositionAfterFall = function(nullPoint)
 	{
 		velocity.y = 0;
-		human.position.y = nullPoint + 0.07;
+		human.position.y = nullPoint + height;
 	};
 	
 	this.collision = function(objects)
@@ -57,7 +70,7 @@ var Human = function()
 			var distance = intersections[0].distance;
 
 			// Если под нами препятствие, и мы падаем вниз, то не давать падать
-			if (distance > 0 && distance < 0.07 && velocity.y <= 0) 
+			if (distance > 0 && distance < height && velocity.y <= 0) 
 			{
 				this.setYPositionAfterFall(intersections[0].point.y);
 			}
@@ -75,8 +88,8 @@ var Human = function()
 		v = v.normalize();
 
 		// Постоянно падаем
-		velocity.x = v.x * 0.005;
-		velocity.z = v.z * 0.005;
+		velocity.x = delta * v.x * 0.0005;
+		velocity.z = delta * v.z * 0.0005;
 		velocity.y -= 0.00025 * delta;
 
 		// Двигаем объект

@@ -1,5 +1,6 @@
 // Класс поверхности Three.js
 // Здесь создается рендер, объекты мира, а так же происходит отрисовка
+
 var Surface = function()
 {
 	// Все кординаты загоняются в один предел. Делятся на значение переменной max.
@@ -16,6 +17,7 @@ var Surface = function()
 	var renderer;
 	var controls;
 	var time;
+	var clock = new THREE.Clock();
 
 	var skyBox;
 
@@ -49,7 +51,20 @@ var Surface = function()
 
 	var onDocumentMouseDown = function(event) 
 	{
-		controls.mouseDown(event, objects);		
+		if(prioritet > 0)
+		{
+			if(index < count_story)
+			{
+				$('.leaning').eq(index).css('display', 'none');
+				index++;
+				$('.leaning').eq(index).css('display', 'block');
+			}
+			else 
+			{
+				$('.leaning').eq(index).css('display', 'none');
+				index++;
+			}
+		}
 	};
 
 	var onWindowResize = function() 
@@ -92,11 +107,15 @@ var Surface = function()
 	    skyBox = new SkyBox('skybox/');
 		scene.add(skyBox.getMesh());
 		
+		var floor = new Terrain();
+		scene.add(floor.getMesh());
+		objects.push(floor.getMesh());
+		
 		for(var i = 0; i < count_humans; i++)
 		{
-			humans.push(new Human());
-			humans[humans.length - 1].getMesh(1).position.x = (getRandomInt(0, 300) - 150) / 100.0;
-			humans[humans.length - 1].getMesh(1).position.z = (getRandomInt(0, 300) - 150) / 100.0;
+			humans.push(new Human(HumanTypes.Soldier));
+			humans[humans.length - 1].getMesh(1).position.x = (getRandomInt(40, 260) - 150) / 100.0;
+			humans[humans.length - 1].getMesh(1).position.z = (getRandomInt(40, 260) - 150) / 100.0;
 			
 			humans[humans.length - 1].getMesh(0).position.x = humans[humans.length - 1].getMesh(1).position.x;
 			humans[humans.length - 1].getMesh(0).position.z = humans[humans.length - 1].getMesh(1).position.z;
@@ -106,9 +125,9 @@ var Surface = function()
 			scene.add(humans[humans.length - 1].getMesh(0));
 		}
 		
-		for(var i = 0; i < count_trees - 10; i++)
+		for(var i = 0; i < count_trees; i++)
 		{
-			if(i < (count_trees  - 10)/ 2)
+			if(i < (count_trees)/ 2)
 			{
 				trees.push(new Trees(0));
 			}
@@ -116,13 +135,15 @@ var Surface = function()
 			{
 				trees.push(new Trees(1));
 			}
-			trees[trees.length - 1].getMesh(1).position.x = (getRandomInt(0, 300) - 150) / 100.0;
-			trees[trees.length - 1].getMesh(1).position.z = (getRandomInt(0, 50)  - 150) / 100.0;
+			trees[trees.length - 1].getMesh(1).position.x = (getRandomInt(40, 260) - 150) / 100.0;
+			trees[trees.length - 1].getMesh(1).position.z = (getRandomInt(10, 50)  - 150) / 100.0;
 			trees[trees.length - 1].getMesh(1).position.y = -0.015;
 			
 			trees[trees.length - 1].getMesh(0).position.x = trees[trees.length - 1].getMesh(1).position.x;
 			trees[trees.length - 1].getMesh(0).position.z = trees[trees.length - 1].getMesh(1).position.z;
 			trees[trees.length - 1].getMesh(0).position.y = 0.4;
+			
+			trees[trees.length - 1].collision(objects);
 			
 			scene.add(trees[trees.length - 1].getMesh(1));
 			scene.add(trees[trees.length - 1].getMesh(0));
@@ -130,11 +151,11 @@ var Surface = function()
 		
 		for(var i = 0; i < count_houses; i++)
 		{
-			houses.push(new Houses(0));
+			houses.push(new Houses(getRandomInt(0, 1)));
 			
-			houses[houses.length - 1].getMesh(1).position.x = (getRandomInt(0, 50)  + 100) / 100.0;
-			houses[houses.length - 1].getMesh(1).position.z = (- 150 + i * 30) / 100.0;
-			houses[houses.length - 1].getMesh(1).position.y = 0.01;
+			houses[houses.length - 1].getMesh(1).position.x = (- 140 + i * (30 - 5)) / 100.0;
+			houses[houses.length - 1].getMesh(1).position.z = (getRandomInt(0, 40)  + 100) / 100.0;
+			houses[houses.length - 1].getMesh(1).position.y = - 0.074 + 0.1;
 			
 			houses[houses.length - 1].getMesh(0).position.x = houses[houses.length - 1].getMesh(1).position.x;
 			houses[houses.length - 1].getMesh(0).position.z = houses[houses.length - 1].getMesh(1).position.z;
@@ -143,28 +164,26 @@ var Surface = function()
 			scene.add(houses[houses.length - 1].getMesh(1));
 			scene.add(houses[houses.length - 1].getMesh(0));
 		}
-		var floor = new Terrain();
-		scene.add(floor.getMesh());
-		objects.push(floor.getMesh());
 		
 		$(window).bind( 'resize', onWindowResize);
+		$(window).bind( 'mousedown', onDocumentMouseDown);
 	};
 
 	var render = function() 
 	{
 		id = requestAnimationFrame(render);		
 		
-		var dateN;
+		var delta = clock.getDelta() * 1000.0;
 		if(prioritet>0)
 		{
-			dateN = Date.now();
-			controls.update(Date.now() - time);	
+			controls.update(delta);	
 			controls.collision(objects);
 
 			skyBox.update(controls.getObject().position);
+			if(index > count_story)
 			for(var i = 0; i < humans.length; i++)
 			{
-				humans[i].update(Date.now() - time, controls.getObject());
+				humans[i].update(delta, controls.getObject());
 				humans[i].collision(objects);
 			}
 			
@@ -177,8 +196,6 @@ var Surface = function()
 			
 			renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight );
 			renderer.render( scene, mapCamera );
-			
-			time = dateN;
 		}
 		
 	};
@@ -201,6 +218,8 @@ var surface;
 var sound;
 var full_live = 100;					// сколько жизни
 var none_opt = 0;						// сколько опыта
+var count_story = 2;
+var index = 0;
 
 function pointerLockChange() 
 {
@@ -208,6 +227,10 @@ function pointerLockChange()
 	{
 	    console.log("Pointer Lock was successful.");
 	    surface.setPrioritet(1);
+		if(index == 0)
+		{
+			$('.leaning').eq(index).css('display', 'block');
+		}
 	} 
 	else 
 	{
@@ -241,12 +264,12 @@ function lockPointer()
 
 function restart()
 {
-	
 	surface.stop_render();
 	
 	surface = new Surface();
 	surface.start();
 
+	index = 0;
 	lockPointer();
 }
 
