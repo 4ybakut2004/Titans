@@ -41,6 +41,11 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	var dista = 0;
 	var znack = 4;
+
+	// Объекты
+	var l_hand;
+	var r_hand;
+	var mini_titan;
 	
 	// Рабочие переменные
 	var pitchObject = new THREE.Object3D();
@@ -50,29 +55,40 @@ THREE.FirstPersonControls = function(camera, borders)
 	yawObject.add(pitchObject);
 	yawObject.position.y = 2 * ggHeight / coordDivisor;
 	
-	
 	var ray = new THREE.Raycaster();
 	ray.ray.direction.set(0, -1, 0);
 	
 	projector = new THREE.Projector();
-	
-	var texture = THREE.ImageUtils.loadTexture('textures/humans/l_hand.png');
-	texture.anisotropy = 16;
-	var material = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomLeft  } );
-	var l_hand = new THREE.Sprite( material );
-	l_hand.position.set( 50, window.innerHeight + 180, 0 );
-	l_hand.scale.set( 200, 256, 1.0 ); // imageWidth, imageHeight
-	
-	pitchObject.add(l_hand);
-	
-	texture = THREE.ImageUtils.loadTexture('textures/humans/r_hand.png');
-	texture.anisotropy = 16;
-	material = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomRight} );
-	var r_hand = new THREE.Sprite( material );
-	r_hand.position.set( window.innerWidth - 100, window.innerHeight + 180, 0 );
-	r_hand.scale.set( 200, 256, 1.0 ); // imageWidth, imageHeight
-	
-	pitchObject.add(r_hand);
+
+	var initialize = function()
+	{
+		var createHand = function(path, x, y, _alignment)
+		{
+			var texture = THREE.ImageUtils.loadTexture(path);
+			texture.anisotropy = 16;
+			var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: true, alignment: _alignment});
+			var hand = new THREE.Sprite(material);
+			hand.position.set(x, y, 0);
+			hand.scale.set(200, 256, 1.0); // imageWidth, imageHeight
+			return hand;
+		};
+
+		l_hand = createHand('textures/humans/l_hand.png', 50, window.innerHeight + 180, THREE.SpriteAlignment.bottomLeft);		
+		pitchObject.add(l_hand);
+		r_hand = createHand('textures/humans/r_hand.png', window.innerWidth - 100, window.innerHeight + 180, THREE.SpriteAlignment.bottomRight);		
+		pitchObject.add(r_hand);
+		
+		var texture = THREE.ImageUtils.loadTexture('textures/humans/face.png');
+		texture.anisotropy = 16;
+		material = new THREE.MeshBasicMaterial({map: texture, color: 0xffffff, transparent : true});
+		mini_titan = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), material);
+		mini_titan.rotation.x = - 3.14 / 2;
+		mini_titan.position.y = 0.5;
+		
+		yawObject.add(mini_titan);
+	};
+
+	initialize();
 	
 	var onMouseMove = function(event) 
 	{

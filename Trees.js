@@ -13,13 +13,15 @@ var Trees = function(type_tree)
 		{
 			case 0:
 				var texture = THREE.ImageUtils.loadTexture( "textures/tree.png" );
-				var material = new THREE.MeshPhongMaterial({color: 0xffffff, map: texture, transparent : true, side: THREE.DoubleSide});
+				var material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent : true, side: THREE.DoubleSide});
+				material.depthWrite = false;
 				var geometry = new THREE.PlaneGeometry(0.05, 0.12);
 				trees = new THREE.Mesh(geometry, material);
 				break;
 			case 1:
 				var texture = THREE.ImageUtils.loadTexture( "textures/tree_small.png" );
-				var material = new THREE.MeshPhongMaterial({color: 0xffffff, map: texture, transparent : true, side: THREE.DoubleSide});
+				var material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent : true, side: THREE.DoubleSide});
+				material.depthWrite = false;
 				var geometry = new THREE.PlaneGeometry(0.04, 0.08);
 				trees = new THREE.Mesh(geometry, material);
 				break;

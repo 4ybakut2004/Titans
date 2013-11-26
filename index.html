@@ -15,12 +15,14 @@
 		<script src="Trees.js" type="text/javascript"></script> 
 		<script src="House.js" type="text/javascript"></script> 
 		<script src="audio.js" type="text/javascript"></script> 
+		<script src="Detector.js"></script>
 		
 		<script src="TexFunctions.js"></script>
 		<script src="Terrain.js"></script>
 		<script src="skybox/SkyBox.js"></script>
 		<script src="SpriteMaterial.js"></script>
-		<script src="Detector.js"></script>
+		<script src="Fire.js"></script>
+		<script src="SpriteAnimator.js"></script>
 	</head> 
 	<body> 
 		<div id="pointer-lock-element"></div>
@@ -104,5 +106,23 @@
 			<p>За поддержкой обращайтесь <a style="color: black;" href="https://developer.mozilla.org/en-US/docs/WebAPI/Pointer_Lock?redirectlocale=en-US&redirectslug=API%2FPointer_Lock_API#Browser_compatibility">сюда</a></p>
 		</div>
 		
+		<div class="modal fade" id="myModal_over" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+			  <div class="modal-content">
+				<div class="modal-body ">
+					<div id = "game_over">
+						<p class = "heard"><b>Вы проиграли...</b></p>
+						<textarea id = "relis">
+							all;as;dasdkaskskdskkskksks
+							snsjnsjnjsjssjsjssjsjssjssjssjs
+						</textarea>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal" onclick="restart();">Начать заново</button>
+				</div>
+			  </div>
+			</div>
+		</div>	
 	</body> 
 </html>

@@ -1,6 +1,12 @@
 // Класс поверхности Three.js
 // Здесь создается рендер, объекты мира, а так же происходит отрисовка
 
+var getRandomInt = function(min, max)
+{
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+	
+var game_over_flag = 0;
 var Surface = function()
 {
 	// Все кординаты загоняются в один предел. Делятся на значение переменной max.
@@ -24,12 +30,10 @@ var Surface = function()
 	// Массивы объектов
 	var objects = [];
 	var humans = [];
-	var trees = [];
-	var houses = [];
+	var fires = [];
 	
-	count_humans = 10;
-	count_trees = 40 * 2;
-	count_houses = 20;
+	var count_humans = 10;
+	var count_fire = 10;
 	
 	// Размеры мини-карты
 	var mapWidth = 200;
@@ -47,11 +51,6 @@ var Surface = function()
 		prioritet = serArg;
 	};
 
-	var getRandomInt = function(min, max)
-	{
-		return Math.floor(Math.random() * (max - min + 1)) + min;
-	};
-
 	var onDocumentMouseDown = function(event) 
 	{
 		if(prioritet > 0)
@@ -67,6 +66,8 @@ var Surface = function()
 				$('.leaning').eq(index).css('display', 'none');
 				index++;
 			}
+			
+			//gameOver();
 		}
 	};
 
@@ -119,56 +120,18 @@ var Surface = function()
 		scene.add(human.getMesh(1));
 		scene.add(human.getMesh(0));
 	};
-
-	// Создает дерево
-	var spawnTree = function(treeType, numbTree)
+	
+	// Создает огонь
+	var spawnFire = function(numbFire)
 	{
-		trees.push(new Trees(treeType));
-		if(numbTree < count_trees / 2.0)
-		{
-			trees[trees.length - 1].getMesh(1).position.x = (getRandomInt(10, 290) - 150) / 100.0;
-			trees[trees.length - 1].getMesh(1).position.z = (getRandomInt(10, 50)  - 150) / 100.0;
-		}
-		else
-		{
-			trees[trees.length - 1].getMesh(1).position.x = (getRandomInt(10, 50)  - 150) / 100.0;
-			trees[trees.length - 1].getMesh(1).position.z = (getRandomInt(10, 290) - 150) / 100.0;
-			trees[trees.length - 1].getMesh(1).rotation.y =  -3.14 / 3;
-		}
+		var fire = new Fire()
+		fires.push(fire);
+		fire.getMesh().position.x = (getRandomInt(10, 40)  + 100) / 100.0;
+		fire.getMesh().position.z = (- 100 + numbFire * (300.0/count_fire - 5)) / 100.0;
 		
-		trees[trees.length - 1].getMesh(1).position.y = -0.015;
+		fire.getMesh().rotation.y =  -3.14 / 2;
 		
-		trees[trees.length - 1].getMesh(0).position.x = trees[trees.length - 1].getMesh(1).position.x;
-		trees[trees.length - 1].getMesh(0).position.z = trees[trees.length - 1].getMesh(1).position.z;
-		trees[trees.length - 1].getMesh(0).position.y = 0.4;
-		
-		trees[trees.length - 1].update(Date.now() - time, controls.getObject());
-		trees[trees.length - 1].collision(objects);
-		
-		scene.add(trees[trees.length - 1].getMesh(1));
-		scene.add(trees[trees.length - 1].getMesh(0));
-	};
-
-	// Создает дом
-	var pred_houses = 0;
-	var spawnHouse = function(houseType, number)
-	{
-		houses.push(new Houses(houseType));
-		
-		houses[houses.length - 1].getMesh(1).position.x = (- 140 + number * (300.0/count_houses - 1)) / 100.0;
-		houses[houses.length - 1].getMesh(1).position.z = (getRandomInt(0, 40) + 100) / 100.0;
-		if(houses[houses.length - 1].getMesh(1).position.z != pred_houses) houses[houses.length - 1].getMesh(1).position.z += 10.0/100.0;
-		
-		pred_houses = houses[houses.length - 1].getMesh(1).position.z;
-		
-		houses[houses.length - 1].getMesh(1).position.y = - 0.074 + 0.05;
-		
-		houses[houses.length - 1].getMesh(0).position.x = houses[houses.length - 1].getMesh(1).position.x;
-		houses[houses.length - 1].getMesh(0).position.z = houses[houses.length - 1].getMesh(1).position.z;
-		houses[houses.length - 1].getMesh(0).position.y = 0.4;
-		
-		scene.add(houses[houses.length - 1].getMesh(1));
-		scene.add(houses[houses.length - 1].getMesh(0));
+		scene.add(fire.getMesh());
 	};
 	
 	// Тут вся инициализация
@@ -190,7 +153,7 @@ var Surface = function()
 			-1.5,               // Near 
 			7.0);             	// Far
 		mapCamera.up = new THREE.Vector3(0,0,-1);
-		mapCamera.lookAt( new THREE.Vector3(0,-1,0) );
+		mapCamera.lookAt(new THREE.Vector3(0,-1,0));
 		scene.add(mapCamera);
 	
 		time = Date.now();
@@ -216,9 +179,11 @@ var Surface = function()
 	    skyBox = new SkyBox('skybox/');
 		scene.add(skyBox.getMesh());
 		
-		var floor = new Terrain();
-		scene.add(floor.getMesh());
-		objects.push(floor.getMesh());
+		var floor = new Terrain(scene);
+		scene.add(floor.getMesh(1));
+		scene.add(floor.getMesh(0));
+		scene.add(floor.getMesh(2));
+		objects.push(floor.getMesh(1));
 		
 		// Начальный состав людской армии
 		for(var i = 0; i < count_humans; i++)
@@ -226,21 +191,9 @@ var Surface = function()
 			spawnHuman(HumanTypes.Soldier);
 		}
 		
-		for(var i = 0; i < count_trees; i++)
+		for(var i = 0; i < count_fire; i++)
 		{
-			if(i < (count_trees)/ 2)
-			{
-				spawnTree(0, i);
-			}
-			else
-			{
-				spawnTree(1, i);
-			}
-		}
-		
-		for(var i = 0; i < count_houses; i++)
-		{
-			spawnHouse(getRandomInt(0, 1), i);
+			spawnFire(i);
 		}
 		
 		$(window).bind( 'resize', onWindowResize);
@@ -253,7 +206,6 @@ var Surface = function()
 		
 		var delta = clock.getDelta() * 1000.0;
 		if(delta > 200) delta = 200;
-		console.log(delta);
 		if(prioritet>0)
 		{
 			// Обрабатываем движение главного героя
@@ -278,6 +230,11 @@ var Surface = function()
 					spawnHuman(HumanTypes.Soldier);
 				}
 				else humans[i].collision(objects);
+			}
+			
+			for(var i = 0; i < count_fire; i++)
+			{
+				fires[i].update(delta);
 			}
 			
 			// Отрисовываем сцену
@@ -327,10 +284,27 @@ function pointerLockChange()
 	} 
 	else 
 	{
-	    console.log("Pointer Lock was lost.");
-	    surface.setPrioritet(0);
-	    $('#myModal').modal('show');
+		if(game_over_flag)
+		{
+			$('#myModal_over').modal('show');
+		}
+		else
+		{
+			$('#myModal').modal('show');
+		}
+		
+		surface.setPrioritet(0);
 	}
+}
+
+function gameOver()
+{
+	document.exitPointerLock = document.exitPointerLock    ||
+							   document.mozExitPointerLock ||
+                               document.webkitExitPointerLock;
+    document.exitPointerLock();
+	
+	game_over_flag = 1;
 }
 
 document.addEventListener('pointerlockchange', pointerLockChange, false);
@@ -358,6 +332,7 @@ function lockPointer()
 
 function restart()
 {
+	game_over_flag = 0;
 	surface.stop_render();
 	
 	surface = new Surface();
@@ -384,7 +359,6 @@ $(document).ready(function()
 		document.getElementById("PointerLockError").style.display = "block";
 		return;
 	}
-
 
 	surface = new Surface();
 	surface.start();

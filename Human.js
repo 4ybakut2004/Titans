@@ -9,6 +9,7 @@ var HumanTypes =
 var Human = function(humanType)
 {
 	var human;
+	var animator;
 	var human_met;
 	
 	var velocity   = new THREE.Vector3(0, 0, 0); // Направление скорости
@@ -35,8 +36,7 @@ var Human = function(humanType)
 		human = new THREE.Sprite(material);
 		human.scale.set( height / 2, height, 1.0 );
 		
-		human.material.uvOffset.x = 0.0;
-		human.material.uvScale.x = 0.036;
+		animator = new Animator(material, 0.036, 0.0, 0.125, 75);
 		
 		var material_met = new THREE.MeshBasicMaterial({color: 0xff0000});
 		var geometry_met = new THREE.PlaneGeometry(0.1, 0.1);
@@ -85,11 +85,7 @@ var Human = function(humanType)
 	{	
 		delta *= 0.1;
 		
-		human.material.uvOffset.x += 0.125;
-		if(human.material.uvOffset.x > 0.875)
-		{
-		    human.material.uvOffset.x = 0.0;
-		}
+		animator.update(delta * 10);
 		
 		var v = new THREE.Vector3(camera.position.x, 0, camera.position.z);
 		v.x -= human.position.x;
