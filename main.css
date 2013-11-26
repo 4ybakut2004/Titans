@@ -23,13 +23,13 @@ canvas
 {
 	position: relative; 
 	float: right;
-	width: 440px; 
+	width: 540px; 
 	height: 0px;
 }
 
 .card
 {
-	width: 420px; 
+	width: 520px; 
 	height: 30px;
 	overflow: hidden; 
 	position: absolute;
@@ -80,6 +80,11 @@ a:hover
 	background: linear-gradient(0deg, #448844 0%, #448844 100%, #884444 10%, #884444 100%);
 }
 
+#vunos
+{
+	background: linear-gradient(0deg, #444488 0%, #444488 100%, #884488 10%, #884488 100%);
+}
+
 .leaning
 {
 	position: absolute; 
@@ -87,7 +92,8 @@ a:hover
 	height: 90px;
 	display: none;
 	border: double #8B4513 4px;
-	margin: 200px 0 0 400px;
 	padding: 7px;
 	background-color: #ffffff; 
+	margin-left: 25%;
+	margin-top: 20%;
 }

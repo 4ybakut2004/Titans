@@ -20,6 +20,7 @@
 		<script src="Terrain.js"></script>
 		<script src="skybox/SkyBox.js"></script>
 		<script src="SpriteMaterial.js"></script>
+		<script src="Detector.js"></script>
 	</head> 
 	<body> 
 		<div id="pointer-lock-element"></div>
@@ -28,6 +29,7 @@
 				<div class="btn btn-primary btn-lg" >Сутпень развития: безмозглый титан</div>
 				<div class="btn btn-primary btn-lg" id = "live">Жизнь</div>
 				<div class="btn btn-primary btn-lg" id = "oput">Опыт</div>
+				<div class="btn btn-primary btn-lg" id = "vunos">Выносливость</div>
 			</div>
 		</div>
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -92,6 +94,14 @@
 				Беги-беги! Спасайся и убивай всех людей, что встретятся тебе на пути! 
 				Если не ты их, то они тебя! Истреби всех людей и проломи стену, вернись к своему племени и обрети свободу.
 			</p>
+		</div>
+
+		<div class = "leaning" id = "GLerror">
+		</div>
+
+		<div class = "leaning" id = "PointerLockError">
+			<p>Ваш браузер не поддерживает блокировку указателя</p>
+			<p>За поддержкой обращайтесь <a style="color: black;" href="https://developer.mozilla.org/en-US/docs/WebAPI/Pointer_Lock?redirectlocale=en-US&redirectslug=API%2FPointer_Lock_API#Browser_compatibility">сюда</a></p>
 		</div>
 		
 	</body> 

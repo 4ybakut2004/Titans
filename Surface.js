@@ -28,7 +28,7 @@ var Surface = function()
 	var houses = [];
 	
 	count_humans = 10;
-	count_trees = 40;
+	count_trees = 40 * 2;
 	count_houses = 20;
 	
 	// Размеры мини-карты
@@ -37,7 +37,6 @@ var Surface = function()
 	
 	// Свет
 	var dirLight;
-	var ambLight;
 	var spotLight;
 	
 	// Идентификатор процесса рендеринга
@@ -102,8 +101,7 @@ var Surface = function()
 		
 		dirLight = new THREE.DirectionalLight(0xFAFAD2, 0.9);
 		dirLight.position.set(1.7, 4.5, -5);
-		dirLight.target.position.set(1, 0, -1);	
-			
+		dirLight.target.position.set(1, 0, -1);			
 	}
 
 	// Создает человечка заданного типа
@@ -123,11 +121,21 @@ var Surface = function()
 	};
 
 	// Создает дерево
-	var spawnTree = function(treeType)
+	var spawnTree = function(treeType, numbTree)
 	{
 		trees.push(new Trees(treeType));
-		trees[trees.length - 1].getMesh(1).position.x = (getRandomInt(40, 260) - 150) / 100.0;
-		trees[trees.length - 1].getMesh(1).position.z = (getRandomInt(10, 50)  - 150) / 100.0;
+		if(numbTree < count_trees / 2.0)
+		{
+			trees[trees.length - 1].getMesh(1).position.x = (getRandomInt(10, 290) - 150) / 100.0;
+			trees[trees.length - 1].getMesh(1).position.z = (getRandomInt(10, 50)  - 150) / 100.0;
+		}
+		else
+		{
+			trees[trees.length - 1].getMesh(1).position.x = (getRandomInt(10, 50)  - 150) / 100.0;
+			trees[trees.length - 1].getMesh(1).position.z = (getRandomInt(10, 290) - 150) / 100.0;
+			trees[trees.length - 1].getMesh(1).rotation.y =  -3.14 / 3;
+		}
+		
 		trees[trees.length - 1].getMesh(1).position.y = -0.015;
 		
 		trees[trees.length - 1].getMesh(0).position.x = trees[trees.length - 1].getMesh(1).position.x;
@@ -148,7 +156,7 @@ var Surface = function()
 		houses.push(new Houses(houseType));
 		
 		houses[houses.length - 1].getMesh(1).position.x = (- 140 + number * (300.0/count_houses - 1)) / 100.0;
-		houses[houses.length - 1].getMesh(1).position.z = (getRandomInt(0, 10) + 100) / 100.0;
+		houses[houses.length - 1].getMesh(1).position.z = (getRandomInt(0, 40) + 100) / 100.0;
 		if(houses[houses.length - 1].getMesh(1).position.z != pred_houses) houses[houses.length - 1].getMesh(1).position.z += 10.0/100.0;
 		
 		pred_houses = houses[houses.length - 1].getMesh(1).position.z;
@@ -175,12 +183,12 @@ var Surface = function()
 		
 		// Камера миникарты
 		mapCamera = new THREE.OrthographicCamera(
-		window.innerWidth / -1000,		// Left
-		window.innerWidth / 1000,		// Right
-		window.innerHeight / 550,		// Top
-		window.innerHeight / -550,	// Bottom
-		-2.5,            			// Near 
-		5.0);           			// Far 
+			-1.5,  				// Left
+			1.5,  				// Right
+			1.5,  				// Top
+			-1.5, 				// Bottom
+			-1.5,               // Near 
+			7.0);             	// Far
 		mapCamera.up = new THREE.Vector3(0,0,-1);
 		mapCamera.lookAt( new THREE.Vector3(0,-1,0) );
 		scene.add(mapCamera);
@@ -222,11 +230,11 @@ var Surface = function()
 		{
 			if(i < (count_trees)/ 2)
 			{
-				spawnTree(0);
+				spawnTree(0, i);
 			}
 			else
 			{
-				spawnTree(1);
+				spawnTree(1, i);
 			}
 		}
 		
@@ -361,6 +369,23 @@ function restart()
 
 $(document).ready(function() 
 {
+	// Проверка поддержки веб джееля
+	if(!Detector.webgl)
+	{
+		var errorElement = document.getElementById("GLerror");
+		errorElement.style.display = "block";
+		Detector.addGetWebGLMessage({parent: errorElement});
+		return;
+	}
+
+	// Проверка поддержки захвата указателя
+	if(!('pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document))
+	{
+		document.getElementById("PointerLockError").style.display = "block";
+		return;
+	}
+
+
 	surface = new Surface();
 	surface.start();
 
