@@ -17,12 +17,7 @@ var Surface = function()
 	// Переменная, отвечающая за то, открыто меню, или нет
 	var prioritet = 0;
 
-	var scene;
-	var camera;
-	var mapCamera
-	var renderer;
-	var controls;
-	var time;
+	var scene, camera, mapCamera, renderer, controls, time;
 	var clock = new THREE.Clock();
 
 	var skyBox;
@@ -40,8 +35,7 @@ var Surface = function()
 	var mapHeight = 200;
 	
 	// Свет
-	var dirLight;
-	var spotLight;
+	var dirLight, spotLight;
 	
 	// Идентификатор процесса рендеринга
 	var id;
@@ -145,13 +139,7 @@ var Surface = function()
 		scene.add(controls.getObject());
 		
 		// Камера миникарты
-		mapCamera = new THREE.OrthographicCamera(
-			-1.5,  				// Left
-			1.5,  				// Right
-			1.5,  				// Top
-			-1.5, 				// Bottom
-			-1.5,               // Near 
-			7.0);             	// Far
+		mapCamera = new THREE.OrthographicCamera(-1.5, 1.5, 1.5, -1.5, -1.5, 7.0); // Left Right Top Bottom Near Far          	
 		mapCamera.up = new THREE.Vector3(0,0,-1);
 		mapCamera.lookAt(new THREE.Vector3(0,-1,0));
 		scene.add(mapCamera);
