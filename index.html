@@ -15,13 +15,13 @@
 		<script src="Trees.js" type="text/javascript"></script> 
 		<script src="House.js" type="text/javascript"></script> 
 		<script src="audio.js" type="text/javascript"></script> 
-		<script src="Detector.js"></script>
 		
 		<script src="TexFunctions.js"></script>
 		<script src="Terrain.js"></script>
 		<script src="skybox/SkyBox.js"></script>
 		<script src="SpriteMaterial.js"></script>
 		<script src="Fire.js"></script>
+		<script src="Detector.js"></script>
 		<script src="SpriteAnimator.js"></script>
 	</head> 
 	<body> 
@@ -38,36 +38,80 @@
 			<div class="modal-dialog">
 			  <div class="modal-content">
 				<div class="modal-body ">
-					<div id = "sound">
-						<img src = "textures/volumee.png" onmousedown = "sound.volume(0);"/>
-						<img src = "textures/volume-off.png" onmousedown = "sound.volumeNone();"/>
-						<img src = "textures/volume.png" onmousedown = "sound.volume(1);"/>
+					
+					<div class="panel-group" id="accordion">
+					<div class="panel panel-default">
+					<div class="panel-heading">
+					  <h4 class="panel-title">
+						<a class="panel-title-a" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+						 <b class = "heard">Управление игрой и правила</b>
+						</a>
+					  </h4>
 					</div>
-					<div id = "control">
-						<p class = "heard"><b>Управление игрой и правила</b></p>
-						<p>Бег: awsd </br> Прыжки: пробел</br> Пауза и выход в меню: esc</br> Закрыть информационные таблички: левая кнопка мыши</br></br> Миникарта в левом верхнем углу определяет твое местопложение и твоих противников.
-						Убивай людей, убегай от пушек. В лес не ходи, как и в пламя не лезь. Смотри на шкалу убийств, чем ближе она к 100%, тем скорее твои силы возрастут.
-						Ты не бессмертен, не давай атаковать себя с зади.
-						</p>
+					<div id="collapseOne" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<div id = "sound">
+								<table border = "0" CELLPADDING = 0 CELLSPACING = 0>
+									<tbody><tr>
+										<td class = "td_s"><img id = "m1" src = "textures/volumee.png" onmousedown = "sound.volume(0);" onmouseout = "document.getElementById('m1').width = 20;" onmouseover = "document.getElementById('m1').width = 23;"/></td>
+										<td class = "td_s"><img id = "m2" src = "textures/volume-off.png" onmousedown = "sound.volumeNone();" onmouseout = "document.getElementById('m2').width = 20;" onmouseover = "document.getElementById('m2').width = 23;"/></td>
+										<td class = "td_s"><img id = "m3" src = "textures/volume.png" onmousedown = "sound.volume(1);" onmouseout = "document.getElementById('m3').width = 20;" onmouseover = "document.getElementById('m3').width = 23;"/></td>
+									</tr></tbody>
+								</table>
+							</div>
+							<p>Бег: awsd </br> Прыжки: пробел</br> Пауза и выход в меню: esc</br> Закрыть информационные таблички: левая кнопка мыши</br></br> 
+							Игра идет от лица титана, так что не пытайтесь сдружиться с людьми, они не поймут вашего рвения, ибо их цель убить вас, как можно быстрее.
+							Для этого они будут целится в заднюю часть вашего тела, старайтесь избегать близких стычек вашего затылка с человеком. Огонь - смерть, лес и домики - ловушки. 
+							Миникарта в левом верхнем углу показывает ваше место положение. Остальные подробности уже в самой игре. Удачи!
+							</p>
+						</div>
 					</div>
-					<div id = "info">
-						<p class = "heard"><b>О создателях</b></p>
-						<p>Игра создана специально командой <a href = "http://wtfcombat2014.diary.ru/?tag=4981599">WTF Shingeki no Kyojin 2014</a>
-						для Зимней фендомной Битвы 2014 на <a href = "">дайри.ру</a>
-						</p>
+				  </div>
+				  <div class="panel panel-default">
+					<div class="panel-heading">
+					  <h4 class="panel-title">
+						<a class="panel-title-a" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+						  <b class = "heard">О создателях</b>
+						</a>
+					  </h4>
 					</div>
-					<div id = "help">
-						<p class = "heard"><b>Технические проблемы</b></p>
-						<p>Одна из самых главных проблем, которая может возникнуть у вас - это устаревшие драйвера, или видеокарта. 
-						Здесь мы вам помочь ничем не можем, ибо все дело в железе. Подробнее об этом можно узнать 
-						<a href = "http://www.khronos.org/webgl/wiki/BlacklistsAndWhitelists">здесь</a>.</br></br>
-						Зависает или не обновляется игра, значит пора:<br/>
-						1. Почистить кэш;<br/>
-						2. Перезагрузить браузер;<br/>
-						3. Перезгрузить ваш ПК;<br/>
-						4. Ну и на самый скверный случай, обновить браузер.<br/>
-						</p>
+					<div id="collapseTwo" class="panel-collapse collapse">
+						<div class="panel-body">
+							<p>Игра создана специально командой <a href = "http://wtfcombat2014.diary.ru/?tag=4981599">WTF Shingeki no Kyojin 2014</a>
+							для Зимней фендомной Битвы 2014 на <a href = "">дайри.ру</a> Полный авторский состав будет объявлен после окончания 
+							Зимней фендомной Битвы 2014.
+							</p>
+						</div>
 					</div>
+    			   </div>
+				  <div class="panel panel-default">
+					<div class="panel-heading">
+					  <h4 class="panel-title">
+						<a class="panel-title-a" data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
+						  <b class = "heard">Технические проблемы</b>
+						</a>
+					  </h4>
+					</div>
+					<div id="collapseThree" class="panel-collapse collapse">
+						<div class="panel-body">
+							<p>Одна из самых главных проблем, которая может возникнуть у вас - это устаревшие драйвера, или видеокарта. 
+							Здесь мы вам помочь ничем не можем, ибо все дело в железе. Подробнее об этом можно узнать 
+							<a href = "http://www.khronos.org/webgl/wiki/BlacklistsAndWhitelists">здесь</a>.</br></br>
+							Еще у вас может быть отключена стандартно в браузере необходимая вещь.
+							Для включения данной опции в хроме: Настройки - Показать дополнительные настройки - Личные данные 
+							- Настройки контента... - Указатель мыши - Предупреждать, что сайт пытается скрыть указатель мыши (рекомендуется).
+							<br/><br/>
+							Зависает или не обновляется игра, значит пора:<br/>
+							1. Почистить кэш;<br/>
+							2. Перезагрузить браузер;<br/>
+							3. Перезгрузить ваш ПК;<br/>
+							4. Ну и на самый скверный случай, обновить браузер.<br/>
+							</p>
+						</div>
+					</div>
+				   </div>
+				</div>
+
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal" onclick="restart();">Начать заново</button>
@@ -78,32 +122,28 @@
 		</div>	
 		
 		<div class = "leaning">
-			<p id = "text_rule0">
+			<p class = "text">
 				Мир жесток - говорят люди, но что они могут знать о мыслях и чувствах титанов? Ничего. 
 				Для людей титаны - животные, что пытаются истребить человеческий род... Но ведь с титанами тоже самое?
 			</p>
 		</div>
 		
 		<div class = "leaning">
-			<p id = "text_rule1">
+			<p class = "text">
 				Только представь себя на месте не брошенного человека среди титанов, а титана среди кровожадных людей! 
 				Ты рястерян, ты не знаешь, что делать и как поступать, ты как младенец посреди улицы в полном одиночестве.
 			</p>
 		</div>
 		
 		<div class = "leaning">
-			<p id = "text_rule2">
+			<p class = "text">
 				Беги-беги! Спасайся и убивай всех людей, что встретятся тебе на пути! 
 				Если не ты их, то они тебя! Истреби всех людей и проломи стену, вернись к своему племени и обрети свободу.
 			</p>
 		</div>
-
-		<div class = "leaning" id = "GLerror">
-		</div>
-
-		<div class = "leaning" id = "PointerLockError">
-			<p>Ваш браузер не поддерживает блокировку указателя</p>
-			<p>За поддержкой обращайтесь <a style="color: black;" href="https://developer.mozilla.org/en-US/docs/WebAPI/Pointer_Lock?redirectlocale=en-US&redirectslug=API%2FPointer_Lock_API#Browser_compatibility">сюда</a></p>
+		
+		<div id = "bouble">
+		</br><p style = "padding: 10px;">Тык - левая кнопка мыши</p>
 		</div>
 		
 		<div class="modal fade" id="myModal_over" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -112,9 +152,12 @@
 				<div class="modal-body ">
 					<div id = "game_over">
 						<p class = "heard"><b>Вы проиграли...</b></p>
+						Уровень: ... </br>
+						Опыт: ...	 </br>
+						... </br>
+						Утащить к себе результат: </br>
 						<textarea id = "relis">
-							all;as;dasdkaskskdskkskksks
-							snsjnsjnjsjssjsjssjsjssjssjssjs
+							тут код для распространения и прочее...
 						</textarea>
 					</div>
 				</div>

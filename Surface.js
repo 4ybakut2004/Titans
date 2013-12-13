@@ -58,9 +58,10 @@ var Surface = function()
 			else 
 			{
 				$('.leaning').eq(index).css('display', 'none');
+				$('#bouble').css('display', 'none');
 				index++;
+				controls.mouseDown(event, humans);
 			}
-			
 			//gameOver();
 		}
 	};
@@ -207,17 +208,26 @@ var Surface = function()
 			// Обрабатываем поведение людей
 			for(var i = 0; i < humans.length; i++)
 			{
-				if(!humans[i].update(delta, controls.getObject()))
+				humans[i].collision(objects);
+				
+				var result = humans[i].update(delta, controls.getObject());
+				if(result == HumanPosition.Backward)
+				{
+					humans[i].collision(objects);
+					controls.decreaseHP(1);
+					$('#live').css('backgroundImage', 'linear-gradient(0deg, #448844 0%, #448844 ' + controls.getHPpart() + '%, #884444 0%, #884444 100%');
+					if(controls.getHP() <= 0) gameOver();
+				}
+				
+				if(humans[i].getAlive() == false)
 				{
 					scene.remove(humans[i].getMesh(1));
 					scene.remove(humans[i].getMesh(0));
 					humans.splice(i, 1);
-					none_opt += 10;
-					$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + none_opt + '%, #444444 0%, #444444 100%');
-					if(none_opt == 100) none_opt = 0;
+					controls.encreaseEXP(1);
+					$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + controls.getEXPpart() + '%, #444444 0%, #444444 100%');
 					spawnHuman(HumanTypes.Soldier);
 				}
-				else humans[i].collision(objects);
 			}
 			
 			for(var i = 0; i < count_fire; i++)
@@ -241,6 +251,8 @@ var Surface = function()
 	this.start = function()
 	{
 		init();
+		$('#live').css('backgroundImage', 'linear-gradient(0deg, #448844 0%, #448844 ' + 100 + '%, #884444 0%, #884444 100%');
+		$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + 0 + '%, #444444 0%, #444444 100%');
 		render();
 	};
 	
@@ -253,8 +265,6 @@ var Surface = function()
 
 var surface;
 var sound;
-var full_live = 100;					// сколько жизни
-var none_opt = 0;						// сколько опыта
 var count_story = 2;
 var index = 0;
 
@@ -268,6 +278,7 @@ function pointerLockChange()
 		if(index == 0)
 		{
 			$('.leaning').eq(index).css('display', 'block');
+			$('#bouble').css('display', 'block');
 		}
 	} 
 	else 
@@ -356,5 +367,6 @@ $(document).ready(function()
 	sound = new Sound(['audio/1.ogg']);
 	sound.play();
 
-	$('#live').css('backgroundImage', 'linear-gradient(0deg, #448844 0%, #448844 ' + full_live + '%, #884444 0%, #884444 100%');
+	$('#live').css('backgroundImage', 'linear-gradient(0deg, #448844 0%, #448844 ' + 100 + '%, #884444 0%, #884444 100%');
+	$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + 0 + '%, #444444 0%, #444444 100%');
 });

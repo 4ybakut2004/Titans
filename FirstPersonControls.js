@@ -23,6 +23,10 @@ THREE.FirstPersonControls = function(camera, borders)
 	var runSpeed  = walkSpeed * 3;  // Скорость бега
 	var jumpPower = 10;             // Сила прыжка
 	var energy    = 1000;           // Запас энергии
+	var hp        = 100;
+	var maxhp     = 100;
+	var exp       = 0;
+	var maxexp    = 50;
 	
 	// Текущие показатели
 	var velocity   = new THREE.Vector3(0, 0, 0); // Направление скорости
@@ -167,10 +171,6 @@ THREE.FirstPersonControls = function(camera, borders)
 		}
 	};
 
-	//$(document).bind('mousemove', onMouseMove);
-	//$(document).bind('keydown', onKeyDown);
-	//$(document).bind('keyup', onKeyUp);
-
 	document.addEventListener('mousemove', onMouseMove, false);
 	document.addEventListener('keydown', onKeyDown, false);
 	document.addEventListener('keyup', onKeyUp, false);
@@ -184,15 +184,19 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	this.mouseDown = function(event, objects)
 	{
-		event.preventDefault();
-		var vector = new THREE.Vector3((0.5) * 2 - 1, - (0.5) * 2 + 1, 0.5);
-		var raycaster = projector.pickingRay(vector, camera);
-
-		var intersects = raycaster.intersectObjects(objects);
-
-		if (intersects.length > 0) 
+		var vector = new THREE.Vector3(0, 0, -1);
+		vector.applyQuaternion(yawObject.quaternion);	
+		 
+		for(var i = 0; i < objects.length; i++)
 		{
-			intersects[0].object.material.color.setHex(Math.random() * 0xffffff);
+		    if(objects[i].getPosType() == HumanPosition.Forward)
+			{
+				var distance = Math.pow(Math.pow(yawObject.position.x - objects[i].getMesh(1).position.x, 2) + Math.pow(yawObject.position.z - objects[i].getMesh(1).position.z, 2), 0.5);
+				if(distance < 0.05)
+				{
+				    objects[i].kill();
+				}
+			}
 		}
 	};
 
@@ -242,7 +246,8 @@ THREE.FirstPersonControls = function(camera, borders)
 
 	this.update = function(delta) 
 	{	
-		if (scope.enabled === false) return; 
+		if (scope.enabled === false) return;
+		$('#vunos').css('backgroundImage', 'linear-gradient(90deg, #444488 0%, #444488 ' + (100 * (energy - usedEnergy) / energy) + '%, #884488 0%, #884488 100%');
 		
 		// Если можно бежать, врубаем вторую
 		// Если нельзя, едем на первой
@@ -287,5 +292,44 @@ THREE.FirstPersonControls = function(camera, borders)
 		yawObject.translateX(velocity.x);
 		yawObject.translateY(velocity.y); 
 		yawObject.translateZ(velocity.z);
+	};
+	
+	this.LookVector = function()
+	{
+		var vector = new THREE.Vector3(0, 0, -1);
+		vector.applyQuaternion(camera.quaternion);
+		return vector;
+	};
+	
+	this.getHP = function()
+	{
+		return hp;
+	};
+	
+	this.decreaseHP = function(delta)
+	{
+		hp -= delta;
+		if(hp < 0) hp = 0;
+	};
+	
+	this.getHPpart = function()
+	{
+		return (100 * hp / maxhp);
+	};
+	
+	this.getEXPpart = function()
+	{
+		return (100 * exp / maxexp);
+	};
+	
+	this.getEXP = function()
+	{
+		return exp;
+	};
+	
+	this.encreaseEXP = function(delta)
+	{
+		exp += delta;
+		if(exp > maxexp) exp = 0;
 	};
 };

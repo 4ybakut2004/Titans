@@ -6,11 +6,21 @@ var HumanTypes =
 	Spy:     3
 };
 
+var HumanPosition = 
+{
+	Run:      0,
+	Backward: 1,
+    Forward:  2
+};
+
 var Human = function(humanType)
 {
 	var human;
 	var animator;
 	var human_met;
+	var behaviuor = 1;
+	var isAlive = true;
+	var posType = HumanPosition.Forward;
 	
 	var velocity   = new THREE.Vector3(0, 0, 0); // Направление скорости
 	var ray = new THREE.Raycaster();
@@ -42,6 +52,21 @@ var Human = function(humanType)
 		var geometry_met = new THREE.PlaneGeometry(0.1, 0.1);
 		human_met = new THREE.Mesh(geometry_met, material_met);
 		human_met.rotation.x = - 3.14 / 2;
+	};
+	
+	this.kill = function()
+	{
+	    isAlive = false;
+	};
+	
+	this.getAlive = function()
+	{
+		return isAlive;
+	};
+	
+	this.getPosType = function()
+	{
+	    return posType;
 	};
 	
 	this.getMesh = function(type_mesh)
@@ -81,17 +106,58 @@ var Human = function(humanType)
 		}
 	};
 
+	// 0 - человек бежит
+	// > 1 - забежал сзади
+	// < 2 - тусняк
 	this.update = function(delta, camera) 
 	{	
 		delta *= 0.1;
 		
 		animator.update(delta * 10);
 		
+		// Вектор на титана
 		var v = new THREE.Vector3(camera.position.x, 0, camera.position.z);
 		v.x -= human.position.x;
 		v.z -= human.position.z;
 		
-		if(Math.abs(v.z) < 0.01 && Math.abs(v.x) < 0.01) return false;
+		// Перпендикуляр зрению титана
+		var vector = new THREE.Vector3(0, 0, -1);
+		vector.applyQuaternion(camera.quaternion);	
+		var per = new THREE.Vector2( - vector.z, vector.x);
+		
+		// Спереди-Сзади титана
+		var humanPos = new THREE.Vector2(human.position.x - camera.position.x, human.position.z - camera.position.z);
+		var d  = humanPos.x * per.y - humanPos.y * per.x;
+		
+		var side = humanPos.x * vector.z - humanPos.y * vector.x;
+		
+		if(Math.abs(v.z) < 0.01 && Math.abs(v.x) < 0.01)
+		{	
+			if(d <= 0)
+			{
+				posType = HumanPosition.Backward;
+				return HumanPosition.Backward;
+			}
+			else
+			{ 
+				posType = HumanPosition.Forward;
+				return HumanPosition.Forward;
+			}
+		}
+		
+		if(d > 0)
+		{
+			posType = HumanPosition.Forward;
+			if(side < 0) v = new THREE.Vector3(camera.position.x + per.x / 10.0, 0, camera.position.z + per.y / 10.0);
+			else v = new THREE.Vector3(camera.position.x - per.x / 10.0, 0, camera.position.z - per.y / 10.0);
+			v.x -= human.position.x;
+			v.z -= human.position.z;
+		}
+		else
+		{
+			posType = HumanPosition.Backward;
+		}
+		
 		v = v.normalize();
 
 		// Постоянно падаем
@@ -106,6 +172,6 @@ var Human = function(humanType)
 		
 		human_met.position.x = human.position.x;
 		human_met.position.z = human.position.z;
-		return true;
+		return HumanPosition.Forward;
 	};
 };
