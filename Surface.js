@@ -468,7 +468,7 @@ $(document).ready(function()
 	loader = new ModelsLoader(surface, true);
 	
 	sound = new Sound(['audio/1.ogg']);
-	//sound.play();
+	sound.play();
 
 	$('#state').text(state_titan[0]);
 	$('#live').css('backgroundImage', 'linear-gradient(0deg, #448844 0%, #448844 ' + 100 + '%, #884444 0%, #884444 100%');
