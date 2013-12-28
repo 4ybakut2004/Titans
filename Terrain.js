@@ -3,7 +3,7 @@ var Terrain = function(_scene, loader)
 	var terrain;
 
 	var count_trees = 40 * 2;
-	var count_houses = 0;
+	var count_houses = 5;
 	var count_cannons = 5;
 	
 	var cannon = [];
@@ -73,7 +73,7 @@ var Terrain = function(_scene, loader)
 			house.getMesh().rotation.y = 3.14 / 2;
 		}
 
-		house.getMesh().position.x = -1.5 + number * 0.3;
+		house.getMesh().position.x = -1.5 + number * 0.6;
 		house.getMesh().position.z = 1.4 - getRandomInt(0, 300) / 1000;
 
 		house.getMesh().position.y = - 0.074;
