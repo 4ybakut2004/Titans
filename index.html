@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html> 
 	<head> 
 		<title>Titans</title>
@@ -10,7 +11,7 @@
 		
 		<script src="three.js" type="text/javascript"></script> 
 		<script src="FirstPersonControls.js" type="text/javascript"></script> 
-		<script src="Surface.js" type="text/javascript"></script> 
+		<script src="Surface.js" type="text/javascript" charset="utf-8"></script>
 		<script src="Human.js" type="text/javascript"></script> 
 		<script src="Trees.js" type="text/javascript"></script> 
 		<script src="House.js" type="text/javascript"></script> 
@@ -23,16 +24,24 @@
 		<script src="Fire.js"></script>
 		<script src="Detector.js"></script>
 		<script src="SpriteAnimator.js"></script>
+		<script src="Blood.js"></script>
+		<script src="Cannon.js"></script>
+
+		<script src="loaders/ColladaLoader.js"></script>
+		<script src="loaders/ModelsLoader.js"></script>
 	</head> 
 	<body> 
 		<div id="pointer-lock-element"></div>
 		<div id = "menu">
 			<div class = "card">
-				<div class="btn btn-primary btn-lg" >Сутпень развития: безмозглый титан</div>
+				<div class="btn btn-primary btn-lg" ><text id = "state"></text></div>
 				<div class="btn btn-primary btn-lg" id = "live">Жизнь</div>
 				<div class="btn btn-primary btn-lg" id = "oput">Опыт</div>
-				<div class="btn btn-primary btn-lg" id = "vunos">Выносливость</div>
 			</div>
+		</div>
+		<div id = "menu">
+			<div class="btn btn-primary btn-lg" id = "skillMight">&nbsp&nbsp<text id = "textSkill">Броня</text>&nbsp&nbsp</div>
+			<div class="btn btn-primary btn-lg" id = "skillPush">Ударная волна</div>
 		</div>
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 			<div class="modal-dialog">
@@ -110,6 +119,25 @@
 						</div>
 					</div>
 				   </div>
+				   <div class="panel panel-default">
+					<div class="panel-heading">
+					  <h4 class="panel-title">
+						<a class="panel-title-a" data-toggle="collapse" data-parent="#accordion" href="#collapseFour">
+						  <b class = "heard">Плюшки</b>
+						</a>
+					  </h4>
+					</div>
+					<div id="collapseFour" class="panel-collapse collapse">
+						<div class="panel-body">
+							Всех секретов не раскроем, но заинтригуем. Всего в игре 3 уровня, на каждом из которых есть свои приятности, 
+							а так же подвохи и трудности. Ну и так, как каждый человек играет своим неповторимым стилем, то мы сделали 
+							специальный бонус - звания титана, за которого вы играли. Всего 15 званий, их можно открыть, приложив некоторое усилие.
+							Два из этих званий особенных. Первый - выявляет лучшего в одной в определенном виде (раскрывать не будем в чем конкретно), 
+							причем лучший всегда один. Если вы полочили это звание, то следующий человек, получивший это звание, первзашел вас.
+							Второй - открывает новые возможности в игре, вернее расширяет игровую сферу. 
+						</div>
+					</div>
+				   </div>
 				</div>
 
 				</div>
@@ -152,17 +180,30 @@
 				<div class="modal-body ">
 					<div id = "game_over">
 						<p class = "heard"><b>Вы проиграли...</b></p>
-						Уровень: ... </br>
-						Опыт: ...	 </br>
-						... </br>
-						Утащить к себе результат: </br>
+							<div id = "text_over_reil"></div>
 						<textarea id = "relis">
-							тут код для распространения и прочее...
 						</textarea>
 					</div>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal" onclick="restart();">Начать заново</button>
+				</div>
+			  </div>
+			</div>
+		</div>	
+		
+		<div class="modal fade" id="myModal_level_up" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+			  <div class="modal-content">
+				<div class="modal-body ">
+					<div id = "game_over">
+						<p class = "heard"><b>Вы встали на новую ступень развития!</b></p>
+						<text id = "level"> 
+						</text>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal" onclick="lockPointer();">Продолжить</button>
 				</div>
 			  </div>
 			</div>

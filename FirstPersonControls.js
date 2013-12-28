@@ -2,8 +2,59 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
+var rungArray = new Array
+(
+"Ленивый титан - с места не сходил, но сражался достойно.<br/>",
+"Титан-мазохист - любитель садо-мазо с участием мечей и пушек.<br/>",
+"Титан попрыгунчик - прыгал по полю как зайчик. Очень большой зайчик.<br/>",
+"Титан-спринтер - гонял по полю так, будто стометровку сдавал.<br/>",
+"Неуязвимый титан - не Бронированный, а похож.<br/>",
+"Титан-кончился порох в пороховницах. Много шуму, да мало толка.<br/>",
+"Титан-жертва инквизиции - бойцы отправили на костёр, приняв за ведьму.<br/>",
+"Титан жнец - одним махом толпу убивахом.<br/>",
+"Титан-марафонец - пробежался по первому уровню так, будто там и преград-то никаких не было.<br/>",
+"Титан-шатун - пошёл туда, не знаю куда, принёс то, не знаю что/смерть и разрушение/добро и справедливость (нужное подчеркнуть).<br/>",
+"Суровый титан - превозмогал лишь своими силами.<br/>",
+"Истинный титан - ленился, шлялся и шумел без толку, полностью оправдывая своё имя. <br/>",
+"Вожак всех титанов - собрал в себе все лучшие титанские качества.<br/>",
+"Титан-ловкач - порхал между снарядов как бабочка.<br/>",
+"Титан-собери все патроны – лишил бойцов боеприпасов, героически собрав их своим телом.<br/>"
+);
+
 THREE.FirstPersonControls = function(camera, borders) 
 {
+	//--------------------------------------начало званий--------------------------------------
+	var distance = 0;						// сколько всего пробежал
+	var hit = 0;							// сколько получил всего ударов /
+	var jump = 0;							// сколько всего раз прыгнул	/
+	var running = 0;						// сколько раз задействовал бег /
+	var damage = 0;						// сколько всего нанесли уровна	/
+	var bloomer = 0;						// сколько хлопал руками просто так /
+	var fire = false;						// помер от огня
+	var killer = 0;							// сколько раз уложил толпу		/
+	var bestTime = 0;						// время прохода уровня 1
+	var side = 0;							// сколько раз натыкался на дома и лес
+	var skill = false;						// если использовал скил, то момо этого звания
+	var gun = 0;							// процент пойманых снарядов от пушки
+	
+	//---------------------------------max---------------------------------------------------
+	var maxdistance = 100;					// сколько всего пробежал
+	var maxhit = 1000;						// сколько получил всего ударов 
+	var maxjump = 200;						// сколько всего раз прыгнул	
+	var maxrunning = 200;					// сколько раз задействовал бег 
+	var maxdamage = 5000;					// сколько всего нанесли уровна	
+	var maxbloomer = 500;					// сколько хлопал руками просто так 
+	var maxkiller = 20;						// сколько раз уложил толпу		
+	var maxbestTime = 10000;				// время прохода уровня 1
+	var maxside = 50;						// сколько раз натыкался на дома и лес
+	var maxgun = 30;						// процент пойманых снарядов от пушки
+	//--------------------------------------конец званий--------------------------------------
+	
+	
+	// ступени опыта
+	var state_opt_level = new Array(5, 5, 550);
+	var level = 0;
+
 	// Указатель на себя
 	var scope = this;
 
@@ -45,10 +96,23 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	var dista = 0;
 	var znack = 4;
-
+	
+	var sing = 1;
+	
+	var skillPush = false; 			// скил, который отталкивает все вокруг
+	var skillPushTime = 0;			// время недоступности скила
+	var skillMight = false;			// скил, который дает прикрыться от нападок
+	var skillMightTime = 0;			// время недоступности скила
+	var skillMightCount = 0;		// время дейсвие скила 
+	
+	var typeSkill = -1;				// тип скила на втором уровне
 	// Объекты
 	var l_hand;
 	var r_hand;
+	var l_blood;
+	var r_blood;
+	
+	var blood_show = false;
 	var mini_titan;
 	
 	// Рабочие переменные
@@ -62,6 +126,7 @@ THREE.FirstPersonControls = function(camera, borders)
 	var ray = new THREE.Raycaster();
 	ray.ray.direction.set(0, -1, 0);
 	
+	var move_hand = false;
 	projector = new THREE.Projector();
 
 	var initialize = function()
@@ -70,7 +135,7 @@ THREE.FirstPersonControls = function(camera, borders)
 		{
 			var texture = THREE.ImageUtils.loadTexture(path);
 			texture.anisotropy = 16;
-			var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: true, alignment: _alignment});
+			var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: true, alignment: _alignment, transparent: true});
 			var hand = new THREE.Sprite(material);
 			hand.position.set(x, y, 0);
 			hand.scale.set(200, 256, 1.0); // imageWidth, imageHeight
@@ -90,6 +155,21 @@ THREE.FirstPersonControls = function(camera, borders)
 		mini_titan.position.y = 0.5;
 		
 		yawObject.add(mini_titan);
+		
+		l_blood = createHand('textures/humans/l_blood.png', -1000, window.innerHeight, THREE.SpriteAlignment.bottomLeft);		
+		pitchObject.add(l_blood);
+		r_blood = createHand('textures/humans/r_blood.png', window.innerWidth + 1000, window.innerHeight, THREE.SpriteAlignment.bottomRight);		
+		pitchObject.add(r_blood);
+		l_blood.position.set(-200, window.innerHeight + 180, 0);		
+		r_blood.position.set(window.innerWidth + 200, window.innerHeight + 180, 0);
+		l_blood.material.opacity = 0;
+		r_blood.material.opacity = 0;
+		
+		$('#skillMight').css('display', 'none');
+		$('#skillPush').css('display', 'none');
+		$('#skillPush').css('backgroundImage', 'linear-gradient(90deg, #008B8B 0%, #008B8B ' + 100 + '%, #00CDCD 0%, #00CDCD 100%');
+		$('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #2E8B57 0%, #2E8B57 ' + 100 + '%, #9AFF9A 0%, #9AFF9A 100%');
+		
 	};
 
 	initialize();
@@ -107,7 +187,7 @@ THREE.FirstPersonControls = function(camera, borders)
 		pitchObject.rotation.x = Math.max(-PI_2, Math.min(PI_2, pitchObject.rotation.x));
 	};
 
-	var onKeyDown = function(event) 
+	this.onKeyDown = function(event, objects) 
 	{
 		switch (event.keyCode) 
 		{
@@ -131,12 +211,34 @@ THREE.FirstPersonControls = function(camera, borders)
 				break;
 
 			case 32: // space
-				if (canJump === true) velocity.y += jumpPower / coordDivisor;
+				if (canJump === true)
+				{
+					velocity.y += jumpPower / coordDivisor;
+					jump ++;
+				}
 				canJump = false;
 				break;
 				
 			case 16: // shift
-				if(canJump) isRunning = true; // Если мы на земле, то включаем бег
+				if(canJump && level > 0 && typeSkill == 0) isRunning = true; // Если мы на земле, то включаем бег
+				break;
+				
+			case 81: //q доступно только на 3 уровне
+				if(level > 1 && !skillPush)
+				{
+					skill = true;
+					skillPush = true;
+					SkillPush(objects);
+					$('#skillPush').css('backgroundImage', 'linear-gradient(90deg, #008B8B 0%, #008B8B ' + 0 + '%, #00CDCD 0%, #00CDCD 100%');
+				}
+				break;
+				
+			case 69: //e доступно только на 2 уровне
+				if(level > 0 && typeSkill == 1)
+				{
+					skillMight = true;
+					skill = true;
+				}
 				break;
 		}
 	};
@@ -167,12 +269,12 @@ THREE.FirstPersonControls = function(camera, borders)
 				
 			case 16: // shift
 				isRunning = false;
+				running ++;
 				break;
 		}
 	};
 
 	document.addEventListener('mousemove', onMouseMove, false);
-	document.addEventListener('keydown', onKeyDown, false);
 	document.addEventListener('keyup', onKeyUp, false);
 
 	this.enabled = true;
@@ -184,18 +286,32 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	this.mouseDown = function(event, objects)
 	{
-		var vector = new THREE.Vector3(0, 0, -1);
-		vector.applyQuaternion(yawObject.quaternion);	
-		 
-		for(var i = 0; i < objects.length; i++)
+		if(!move_hand)
 		{
-		    if(objects[i].getPosType() == HumanPosition.Forward)
+			move_hand = true;
+			var kol_dae = 0;
+			sing = 1;
+			
+			if(canJump)
 			{
-				var distance = Math.pow(Math.pow(yawObject.position.x - objects[i].getMesh(1).position.x, 2) + Math.pow(yawObject.position.z - objects[i].getMesh(1).position.z, 2), 0.5);
-				if(distance < 0.05)
+				var vector = new THREE.Vector3(0, 0, -1);
+				vector.applyQuaternion(yawObject.quaternion);	
+				 
+				for(var i = 0; i < objects.length; i++)
 				{
-				    objects[i].kill();
+					if(objects[i].getPosType() == HumanPosition.Forward)
+					{
+						var distance = Math.pow(Math.pow(yawObject.position.x - objects[i].getMesh(1).position.x, 2) + Math.pow(yawObject.position.z - objects[i].getMesh(1).position.z, 2), 0.5);
+						if(distance < 0.05)
+						{
+							objects[i].setBlood(true);
+							kol_dae ++;
+						}
+					}
 				}
+				
+				if(kol_dae==0) bloomer ++;
+				if(kol_dae > 2) killer ++;
 			}
 		}
 	};
@@ -221,45 +337,61 @@ THREE.FirstPersonControls = function(camera, borders)
 		// Если есть пересечение, обрабатываем
 		if (intersections.length > 0) 
 		{
-			var distance = intersections[0].distance;
+			var _distance = intersections[0].distance;
 
 			// Если под нами препятствие, и мы падаем вниз, то не давать падать
-			if (distance > 0 && distance < ggHeight / coordDivisor && velocity.y <= 0) 
+			if (_distance > 0 && _distance < ggHeight / coordDivisor && velocity.y <= 0) 
 			{
 				this.setYPositionAfterFall(intersections[0].point.y);
 			}
 		}
 		
 		// Не даем зайти за пределы мира
-		if(yawObject.position.x < worldBorders.x) yawObject.position.x = worldBorders.x;
-		if(yawObject.position.x > worldBorders.z) yawObject.position.x = worldBorders.z;
-		if(yawObject.position.z < worldBorders.y) yawObject.position.z = worldBorders.y;
-		if(yawObject.position.z > worldBorders.w) yawObject.position.z = worldBorders.w;
-
-		// Если мы на полу, не давать падать
-		/*if ( yawObject.position.y < ggHeight / coordDivisor) 
-		{
-			this.setYPositionAfterFall( 0 );	
-		}*/
+		if(yawObject.position.x < worldBorders.x){ yawObject.position.x = worldBorders.x; side++; }
+		if(yawObject.position.x > worldBorders.z){ yawObject.position.x = worldBorders.z; fire = true; hp = 0; }
+		if(yawObject.position.z < worldBorders.y){ yawObject.position.z = worldBorders.y; side++; }
+		if(yawObject.position.z > worldBorders.w){ yawObject.position.z = worldBorders.w; side++; }
 		// ------------------------------------------------------------------------------------
 	};
 
+	
 	this.update = function(delta) 
 	{	
+		delta *= 0.1;
+
+		if(hp + 0.05 * delta < maxhp) hp += 0.05 * delta;
+		
+		if(move_hand)
+		{
+			r_hand.rotation += delta*sing*0.03;
+			l_hand.rotation -= delta*sing*0.03;
+			
+			if(r_hand.rotation >= 3.14/2)
+			{
+				r_hand.rotation = 3.14/2;
+				l_hand.rotation = -3.14/2;
+				sing = -sing;
+			}
+			
+			if(r_hand.rotation <= 0)
+			{ 
+				r_hand.rotation = 0;
+				l_hand.rotation = 0;
+				move_hand = false;
+			}
+		}
 		if (scope.enabled === false) return;
-		$('#vunos').css('backgroundImage', 'linear-gradient(90deg, #444488 0%, #444488 ' + (100 * (energy - usedEnergy) / energy) + '%, #884488 0%, #884488 100%');
+		if(typeSkill == 0) $('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #444488 0%, #444488 ' + (100 * (energy - usedEnergy) / energy) + '%, #884488 0%, #884488 100%');
 		
 		// Если можно бежать, врубаем вторую
 		// Если нельзя, едем на первой
 		speed = walkSpeed;
-		if(!isRunning) usedEnergy -= 2;
+		if(!isRunning) usedEnergy -= 2 * delta;
 		if(isRunning && (usedEnergy < energy))
 		{
 			speed = runSpeed;
-			usedEnergy += 5;
+			usedEnergy += 5 * delta;
 		}
-		
-		delta *= 0.1;
 
 		// Постоянно уменьшаем скорость, чтобы останавливаться
 		velocity.x += (-velocity.x) * 0.08 * delta;
@@ -274,8 +406,9 @@ THREE.FirstPersonControls = function(camera, borders)
 		
 		if(moveForward||moveBackward||moveLeft||moveRight)
 		{
-			dista += znack;
-			if(isRunning) dista += znack;
+			var z = delta * znack * 0.4;
+			dista += z;
+			if(isRunning) dista += z;
 			if(dista > 32) dista = 32;
 			if(dista < 0) dista = 0;
 			if(dista > 31 || dista < 1) znack = - znack;
@@ -292,6 +425,50 @@ THREE.FirstPersonControls = function(camera, borders)
 		yawObject.translateX(velocity.x);
 		yawObject.translateY(velocity.y); 
 		yawObject.translateZ(velocity.z);
+		
+		distance += delta * Math.pow(velocity.x*velocity.x + velocity.z*velocity.z, 0.5);
+		
+		if(skillPush)
+		{		
+			skillPushTime += delta;
+			$('#skillPush').css('backgroundImage', 'linear-gradient(90deg, #008B8B 0%, #008B8B ' + (100 * skillPushTime / 500) + '%, #00CDCD 0%, #00CDCD 100%');
+		}
+		
+		if(skillPushTime >= 500)
+		{
+			skillPush = false;
+			skillPushTime = 0;
+		}
+		
+		// скилл брони включен
+		if(skillMight) 
+		{ 
+			skillMightCount += delta;
+			$('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #2E8B57 0%, #2E8B57 ' + (100 * (50 - skillMightCount) / 50) + '%, #9AFF9A 0%, #9AFF9A 100%');
+			if(skillMightCount > 50) 
+			{
+				skillMight = false;
+				skillMightTime += delta;
+			}
+		}
+		
+		if(skillMightTime > 0)
+		{
+			if(skillMightTime >= 500) skillMightTime = 0;
+			else
+			{
+				skillMightTime += delta;
+				$('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #2E8B57 0%, #2E8B57 ' + (100 * skillMightTime / 500) + '%, #9AFF9A 0%, #9AFF9A 100%');
+			}
+		}
+		if(blood_show = true)
+		{
+			blood_show = false;
+			l_blood.material.opacity = 0;
+			r_blood.material.opacity = 0;
+			//l_blood.position.set(-1000, window.innerHeight, 0);		
+			//r_blood.position.set(window.innerWidth + 1000, window.innerHeight, 0);
+		}
 	};
 	
 	this.LookVector = function()
@@ -308,8 +485,19 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	this.decreaseHP = function(delta)
 	{
-		hp -= delta;
-		if(hp < 0) hp = 0;
+		if(!skillMight)
+		{
+			hit ++;
+			damage += delta;
+			hp -= delta;
+			if(hp < 0) hp = 0;
+			
+			l_blood.material.opacity = Math.pow(1 - hp / maxhp, 0.25);
+			r_blood.material.opacity = Math.pow(1 - hp / maxhp, 0.25);
+			//l_blood.position.set(-200, window.innerHeight + 180, 0);		
+			//r_blood.position.set(window.innerWidth + 200, window.innerHeight + 180, 0);
+			blood_show = true;			
+		}
 	};
 	
 	this.getHPpart = function()
@@ -319,7 +507,7 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	this.getEXPpart = function()
 	{
-		return (100 * exp / maxexp);
+		return (100 * exp / state_opt_level[level]);
 	};
 	
 	this.getEXP = function()
@@ -327,9 +515,106 @@ THREE.FirstPersonControls = function(camera, borders)
 		return exp;
 	};
 	
-	this.encreaseEXP = function(delta)
+	this.getEXP = function()
+	{
+		return exp;
+	};
+	
+	this.encreaseEXP = function(delta, timeLevel)
 	{
 		exp += delta;
-		if(exp > maxexp) exp = 0;
+		if(exp >= state_opt_level[level])
+		{
+			exp = 0;
+			level ++;
+			if(level == 1)
+			{
+				bestTime = timeLevel;
+				typeSkill = getRandomInt(0, 1);
+				if(typeSkill == 0) $('#textSkill').text('Драп');
+				else $('#textSkill').text('Броня');
+				
+				$('#skillMight').css('display', 'block');
+			}
+			if(level == 2)
+			{
+				$('#skillPush').css('display', 'block');
+			}
+		}
+	};
+	
+	this.getLevel = function()
+	{
+		return level;
+	}
+	
+	var SkillPush = function(objects)
+	{
+		if(skillPush)
+		{
+			var vector = new THREE.Vector3(0, 0, -1);
+			vector.applyQuaternion(yawObject.quaternion);	
+			 
+			for(var i = 0; i < objects.length; i++)
+			{
+				var distance = Math.pow(Math.pow(yawObject.position.x - objects[i].getMesh(1).position.x, 2) + Math.pow(yawObject.position.z - objects[i].getMesh(1).position.z, 2), 0.5);
+				if(distance < 0.08)
+				{
+					objects[i].setFromTitan(true);
+				}
+			}
+		}
+	}
+	
+	this.getRung = function()
+	{
+		var s = "";
+		var loh = 0;
+		var neloh = 0;
+		
+		if(distance <= maxdistance && level != 0){ s += rungArray[0]; loh ++; }
+		if(hit >= maxhit) s += rungArray[1];
+		if(jump >= maxjump) s += rungArray[2];
+		if(running >= maxrunning) s += rungArray[3];
+		if(damage >= maxdamage){ s += rungArray[4]; neloh ++; }
+		
+		if(bloomer >= maxbloomer){ s += rungArray[5]; loh ++; }
+		if(fire) s += rungArray[6];
+		if(killer >= maxkiller){ s += rungArray[7]; neloh ++; }
+		if(bestTime <= maxbestTime && level != 0){ s += rungArray[8]; neloh ++; }
+		if(side >= maxside){ s += rungArray[9]; loh ++; }
+		
+		if(!skill && level != 0) s += rungArray[10];
+		
+		if(loh >= 3) s += rungArray[11];
+		if(neloh >= 3) s += rungArray[12];
+		
+		// остались ловкий и минер
+		return s;
+	};
+
+	this.getDistFromSide = function(side)
+	{
+		var distance = 0;
+		switch(side)
+		{
+			case 0:
+				// x = -1.5
+				distance = yawObject.position.x + 1.5;
+				break;
+			case 1:
+				// z = -1.5
+				distance = yawObject.position.z + 1.5;
+				break;
+			case 2:
+				// z = 1.5
+				distance = 1.5 - yawObject.position.z;
+				break;
+			case 3:
+				// x = 1.5
+				distance = 1.5 - yawObject.position.x;
+				break;
+		}
+		return distance;
 	};
 };

@@ -6,6 +6,7 @@ var Animator = function(_material, _scale, _startOffset, _offsetDelta, _period)
 	var offsetDelta = _offsetDelta;
 	var period      = _period;
 	var time        = 0;
+	var forCount    = 0;
 
 	material.uvOffset.x = startOffset;
 	material.uvScale.x  = scale;
@@ -20,7 +21,21 @@ var Animator = function(_material, _scale, _startOffset, _offsetDelta, _period)
 			{
 			    material.uvOffset.x = 0.0;
 			}
+			if(material.uvOffset.x > 1 - 2 * offsetDelta)
+			{
+				forCount++;
+			}
 			time = 0;
 		}
+	};
+	
+	this.isFirst = function()
+	{
+		return (forCount == 0);
+	};
+	
+	this.setForCount = function(c)
+	{
+		forCount = c;
 	};
 };

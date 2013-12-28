@@ -1,19 +1,23 @@
-var Terrain = function(_scene)
+var Terrain = function(_scene, loader)
 {
 	var terrain;
-	var forest_l;
-	var forest_r;
 
 	var count_trees = 40 * 2;
-	var count_houses = 20;
+	var count_houses = 0;
+	var count_cannons = 5;
+	
+	var cannon = [];
+	var dist = 0;
+	
+	var cannonPosK;
 
-	var createForest = function(x, y, z, rotation)
+	var createForest = function(x, y, z, rotation, width)
 	{
 		texture = THREE.ImageUtils.loadTexture( "textures/forest.png" );
       	texture.anisotropy = 16;
       	var material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent : true, side: THREE.DoubleSide});
-      	material.depthWrite = false;
-		var geometry = new THREE.PlaneGeometry(3, 0.26);
+      	material.alphaTest = 0.5;
+		var geometry = new THREE.PlaneGeometry(width, 0.26);
       	var forest = new THREE.Mesh(geometry, material);
 		forest.position.x = x;
 		forest.position.y = y;
@@ -39,7 +43,7 @@ var Terrain = function(_scene)
 			tree.getMesh(1).rotation.y =  -3.14 / 3;
 		}
 		
-		tree.getMesh(1).position.y = -0.015;
+		tree.getMesh(1).position.y = -0.021;
 		
 		tree.getMesh(0).position.x = tree.getMesh(1).position.x;
 		tree.getMesh(0).position.z = tree.getMesh(1).position.z;
@@ -52,21 +56,42 @@ var Terrain = function(_scene)
 	var pred_houses = 0;
 	var spawnHouse = function(houseType, number)
 	{
-		var house = new Houses(houseType);
-		
-		house.getMesh(1).position.x = (- 140 + number * (300.0/count_houses - 1)) / 100.0;
-		house.getMesh(1).position.z = (getRandomInt(0, 40) + 100) / 100.0;
-		if(house.getMesh(1).position.z != pred_houses) house.getMesh(1).position.z += 10.0/100.0;
-		
-		pred_houses = house.getMesh(1).position.z;
-		
-		house.getMesh(1).position.y = - 0.074 + 0.05;
-		
-		house.getMesh(0).position.x = house.getMesh(1).position.x;
-		house.getMesh(0).position.z = house.getMesh(1).position.z;
-		house.getMesh(0).position.y = 0.4;
+		var house = new Houses(houseType, loader.houses);
+
+		if(houseType == 0)
+		{
+			house.getMesh().rotation.y = 3.14 / 4 + 3.14;
+		}
+
+		if(houseType == 1)
+		{
+			house.getMesh().rotation.y = 3.14 / 2 + 3.14 * 1.1;
+		}
+
+		if(houseType == 2)
+		{
+			house.getMesh().rotation.y = 3.14 / 2;
+		}
+
+		house.getMesh().position.x = -1.5 + number * 0.3;
+		house.getMesh().position.z = 1.4 - getRandomInt(0, 300) / 1000;
+
+		house.getMesh().position.y = - 0.074;
 		
 		return house;
+	};
+
+	var spawnCannon = function(number)
+	{
+		var cannon = new Cannon(loader.cannons[0]);
+
+		cannon.getObject().rotation.y = - 3.14 / 2;
+
+		cannon.getObject().position.x = -0.9 + number * 0.4;
+		cannon.getObject().position.z = 0.95;
+		cannon.getObject().position.y = - 0.074;
+
+		return cannon;
 	};
 	
 	var generate = function(_scene)
@@ -77,19 +102,30 @@ var Terrain = function(_scene)
 		texture.repeat.set( 30, 30 );
       	texture.anisotropy = 16;
       	var material = new THREE.MeshLambertMaterial({color: 0xffffff, map: texture});//MeshBasicMaterial({color: 0xffffff, map: texture});
-		var geometry = new THREE.PlaneGeometry(3, 3, 30, 30);
+		var geometry = new THREE.PlaneGeometry(3.5, 3.5, 30, 30);
 		for(var i = 0; i < geometry.vertices.length; i++)
 		{
-			if(i < 30*25) geometry.vertices[i].z = - Math.random()/35.0 - 0.045;
+			if(i < 30*24 || i > 30*28) geometry.vertices[i].z = - Math.random()/35.0 - 0.045;
 			else geometry.vertices[i].z = - 0.074;
 		}
       	terrain = new THREE.Mesh(geometry, material);
       	terrain.rotation.x = - 3.14 / 2;
 		terrain.castShadow = false;
 		terrain.receiveShadow = true;
+		_scene.add(terrain);
 		
-		forest_l = createForest(0, 0.05, -1.5, 0); // x, y, z, rotation
-		forest_r = createForest(-1.5, 0.05, 0, 3.14 / 2); // x, y, z, rotation
+		var forest = createForest(0, 0.05, -1.5, 0, 3); // x, y, z, rotation
+		_scene.add(forest);
+		forest = createForest(-1.5, 0.05, 0, 3.14 / 2, 3); // x, y, z, rotation
+		_scene.add(forest);
+		forest = createForest(0, 0.05, -1.8, 3.14, 3.5); // x, y, z, rotation
+		_scene.add(forest);
+		forest = createForest(-1.8, 0.05, 0, 3.14 / 2 + 3.14, 3.5); // x, y, z, rotation
+		_scene.add(forest);
+		forest = createForest(0, 0.05, -2.1, 0, 4.0); // x, y, z, rotation
+		_scene.add(forest);
+		forest = createForest(-2.1, 0.05, 0, 3.14 / 2, 4.0); // x, y, z, rotation
+		_scene.add(forest);
 
 		for(var i = 0; i < count_trees; i++)
 		{
@@ -108,9 +144,18 @@ var Terrain = function(_scene)
 		
 		for(var i = 0; i < count_houses; i++)
 		{
-			var house = spawnHouse(getRandomInt(0, 1), i);
-			_scene.add(house.getMesh(1));
-			_scene.add(house.getMesh(0));
+			var type;
+			if(i < 2 || i > count_houses - 3) type = getRandomInt(0, 2);
+			else type = getRandomInt(0, 1);
+			var house = spawnHouse(type, i);
+			_scene.add(house.getMesh());
+		}
+
+		for(var i = 0; i < count_cannons; i++)
+		{
+			var cannon_copy = spawnCannon(i);
+			_scene.add(cannon_copy.getObject());
+			cannon.push(cannon_copy);
 		}
 	};
 
@@ -125,4 +170,62 @@ var Terrain = function(_scene)
 	};
 
 	generate(_scene);
+	
+	this.updateCannon = function(delta, camera, _scene_n, controls)
+	{
+		for(var i = 0; i < count_cannons; i++)
+		{
+			// активация пушек только после первого уровня!
+			if(controls.getLevel() > 0)
+			{
+				cannon[i].update(delta, camera);
+				if(cannon[i].visibleHole())
+				{
+					if(!cannon[i].addVis())
+					{
+						// типа тут выстрел
+						cannon[i].getMeshHole().position.x = cannon[i].getObject().position.x;
+						cannon[i].getMeshHole().position.y = cannon[i].getObject().position.y + 0.01;
+						cannon[i].getMeshHole().position.z = cannon[i].getObject().position.z;
+						_scene_n.add(cannon[i].getMeshHole());
+						cannon[i].setaddVis(true);
+						
+						// запомнить вектор от пушки к титану
+					
+						cannonPosK = new THREE.Vector2(- cannon[i].getObject().position.x + camera.position.x, - cannon[i].getObject().position.z + camera.position.z);
+						cannon[i].setVectorHole(cannonPosK);
+					}
+					
+					cannon[i].getMeshHole().position.y += 0.0008;
+					dist = Math.pow(Math.pow(cannon[i].getMeshHole().position.x - cannon[i].getObject().position.x, 2) + Math.pow(cannon[i].getMeshHole().position.z - cannon[i].getObject().position.z, 2), 0.5);
+					
+					if(dist > 0.7)
+					{
+						// взрыв
+						cannon[i].setVecBoom(cannon[i].getMeshHole());
+						_scene_n.add(cannon[i].getMeshBoom());
+						cannon[i].holeBoomF(delta);
+						
+						_scene_n.remove(cannon[i].getMeshHole());
+						dist = 0;
+						cannon[i].setaddVis(false);
+					}
+					var disHvT = Math.pow(Math.pow(cannon[i].getMeshHole().position.x - camera.position.x, 2) + Math.pow(cannon[i].getMeshHole().position.z - camera.position.z, 2), 0.5);
+					
+					if(disHvT < 0.05)
+					{
+						_scene_n.remove(cannon[i].getMeshHole());
+						dist = 0;
+						cannon[i].setaddVis(false);
+						controls.decreaseHP(15);
+					}
+					
+					if(cannon[i].getBoom() > 0 )
+					{
+						cannon[i].holeBoomF(delta);
+					}
+				}
+			}
+		}
+	}
 };

@@ -23,13 +23,13 @@ canvas
 {
 	position: relative; 
 	float: right;
-	width: 540px; 
+	width: 360px; 
 	height: 0px;
 }
 
 .card
 {
-	width: 520px; 
+	width: 465px; 
 	height: 30px;
 	overflow: hidden; 
 	position: absolute;
@@ -80,6 +80,31 @@ a:hover
 #live
 {
 	background: linear-gradient(0deg, #448844 0%, #448844 100%, #884444 10%, #884444 100%);
+}
+
+#skillPush
+{
+	background: linear-gradient(0deg, #008B8B 0%, #008B8B 100%, #00CDCD 10%, #00CDCD 100%);
+	position: relative; 
+	float: right;
+	width: 98px; 
+	height: 19px;
+	display: none;
+	margin-right: -114px;
+	margin-top: 89px;
+
+}
+
+#skillMight
+{
+	background: linear-gradient(0deg, #2E8B57 0%, #2E8B57 100%, #9AFF9A 10%, #9AFF9A 100%);
+	position: relative; 
+	float: right;
+	width: 98px; 
+	height: 19px;
+	margin-top: 49px;
+	margin-right: 15px;
+	display: none;
 }
 
 #vunos
