@@ -3,11 +3,14 @@ var Terrain = function(_scene, loader)
 	var terrain;
 
 	var count_trees = 40 * 2;
-	var count_houses = 5;
+	var count_houses = 0;
 	var count_cannons = 5;
 	
 	var cannon = [];
+	var trees  = [];
 	var dist = 0;
+	
+	var forestR = [];
 	
 	var cannonPosK;
 
@@ -116,16 +119,22 @@ var Terrain = function(_scene, loader)
 		
 		var forest = createForest(0, 0.05, -1.5, 0, 3); // x, y, z, rotation
 		_scene.add(forest);
+		forestR.push(forest);
 		forest = createForest(-1.5, 0.05, 0, 3.14 / 2, 3); // x, y, z, rotation
 		_scene.add(forest);
+		forestR.push(forest);
 		forest = createForest(0, 0.05, -1.8, 3.14, 3.5); // x, y, z, rotation
 		_scene.add(forest);
+		forestR.push(forest);
 		forest = createForest(-1.8, 0.05, 0, 3.14 / 2 + 3.14, 3.5); // x, y, z, rotation
 		_scene.add(forest);
+		forestR.push(forest);
 		forest = createForest(0, 0.05, -2.1, 0, 4.0); // x, y, z, rotation
 		_scene.add(forest);
+		forestR.push(forest);
 		forest = createForest(-2.1, 0.05, 0, 3.14 / 2, 4.0); // x, y, z, rotation
 		_scene.add(forest);
+		forestR.push(forest);
 
 		for(var i = 0; i < count_trees; i++)
 		{
@@ -138,6 +147,7 @@ var Terrain = function(_scene, loader)
 			{
 				tree = spawnTree(1, i);
 			}
+			trees.push(tree);
 			_scene.add(tree.getMesh(1));
 			_scene.add(tree.getMesh(0));
 		}
@@ -159,6 +169,14 @@ var Terrain = function(_scene, loader)
 		}
 	};
 
+	this.deleteForest = function(sceneR)
+	{
+		for(var i = 0; i < 6; i++)
+		{
+			sceneR.remove(forestR[i]);
+		}
+	};
+	
 	this.getMesh = function(type_mesh)
 	{
 		switch(type_mesh)
@@ -171,6 +189,14 @@ var Terrain = function(_scene, loader)
 
 	generate(_scene);
 	
+	this.collision = function()
+	{
+		for(var i = 0; i < count_trees; i++)
+		{
+			trees[i].collision([terrain]);
+		}
+	};
+
 	this.updateCannon = function(delta, camera, _scene_n, controls)
 	{
 		for(var i = 0; i < count_cannons; i++)

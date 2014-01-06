@@ -2,8 +2,8 @@ var Trees = function(type_tree)
 {
 	var trees;
 	var trees_met;
+	var height;
 
-	var velocity   = new THREE.Vector3(0, 0, 0); // Направление скорости
 	var ray = new THREE.Raycaster();
 	ray.ray.direction.set(0, -1, 0);
 	
@@ -20,6 +20,7 @@ var Trees = function(type_tree)
 				var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true});
 				trees = new THREE.Sprite(material);
 				trees.scale.set( 0.05, 0.12, 1.0 );
+				height = 0.04;
 				break;
 			case 1:
 				var texture = THREE.ImageUtils.loadTexture( "textures/tree_small.png" );
@@ -30,6 +31,7 @@ var Trees = function(type_tree)
 				var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true});
 				trees = new THREE.Sprite(material);
 				trees.scale.set( 0.04, 0.08, 1.0 );
+				height = 0.03;
 				break;
 		};
 		trees.castShadow = true;
@@ -52,16 +54,14 @@ var Trees = function(type_tree)
 	
 	this.setYPositionAfterFall = function(nullPoint)
 	{
-		velocity.y = 0;
-		trees.position.y = nullPoint + 0.07;
+		trees.position.y = nullPoint + height;
 	};
 	
 	this.collision = function(objects)
 	{	
-		// Достаем позицию
-		var copy = trees.position;
-		copy.y += 0.0;
-		
+		var copy = new THREE.Vector3(trees.position.x, trees.position.y, trees.position.z);
+		copy.y += 1.0;
+
 		ray.ray.origin.copy(copy);
 		// Ищем пересечения с предметами
 		var intersections = ray.intersectObjects(objects);
@@ -70,25 +70,7 @@ var Trees = function(type_tree)
 		if (intersections.length > 0) 
 		{
 			var distance = intersections[0].distance;
-
-			// Если под нами препятствие, и мы падаем вниз, то не давать падать
-			if (distance > 0 && distance < 0.07 && velocity.y <= 0) 
-			{
-				this.setYPositionAfterFall(intersections[0].point.y);
-			}
+			this.setYPositionAfterFall(intersections[0].point.y);
 		}
-	};
-	
-	this.update = function(delta, camera) 
-	{	
-		delta *= 0.1;
-
-		// Постоянно падаем
-		velocity.y -= 0.00025 * delta;
-
-		// Двигаем объект
-		trees.translateX(velocity.x);
-		trees.translateY(velocity.y); 
-		trees.translateZ(velocity.z);
 	};
 };

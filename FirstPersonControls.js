@@ -52,7 +52,7 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	
 	// ступени опыта
-	var state_opt_level = new Array(5, 5, 550);
+	var state_opt_level = new Array(1, 1, 1);
 	var level = 0;
 
 	// Указатель на себя
@@ -62,11 +62,11 @@ THREE.FirstPersonControls = function(camera, borders)
 	var PI_2 = Math.PI / 2;
 
     // Настройки мира
-	var coordDivisor = 1000; // Во сколько раз уменьшен мир
+	var coordDivisor = 1000; 		// Во сколько раз уменьшен мир
 	var worldBorders = new THREE.Vector4(borders.x, borders.y, borders.z, borders.w); // x1, z1, x2, z2
 
     // Настройки управления
-	var mouseSensitivity = 0.004; // Чувствительность мыши
+	var mouseSensitivity = 0.004; 	// Чувствительность мыши
 	
     // Настройки игрового процесса
 	var ggHeight  = 40;             // Высота главного героя
@@ -101,11 +101,17 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	var skillPush = false; 			// скил, который отталкивает все вокруг
 	var skillPushTime = 0;			// время недоступности скила
+	
 	var skillMight = false;			// скил, который дает прикрыться от нападок
 	var skillMightTime = 0;			// время недоступности скила
 	var skillMightCount = 0;		// время дейсвие скила 
 	
+	var skillJump = false;			// скилл, который дает убивать пыржком в близи
+	var skillJumpTime = 0;			// время недоступности скила
+	
 	var typeSkill = -1;				// тип скила на втором уровне
+	var typeSkillEnd = -1;			// тип скила на третьем уровне
+	
 	// Объекты
 	var l_hand;
 	var r_hand;
@@ -114,6 +120,11 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	var blood_show = false;
 	var mini_titan;
+	
+	var bloodSprite;				// хочу крови!!
+	var FullBloodSprite = 250;		// полная полоска жажды
+	
+	var theEnd = false;
 	
 	// Рабочие переменные
 	var pitchObject = new THREE.Object3D();
@@ -165,6 +176,10 @@ THREE.FirstPersonControls = function(camera, borders)
 		l_blood.material.opacity = 0;
 		r_blood.material.opacity = 0;
 		
+		bloodSprite = createHand('textures/redline.png', window.innerWidth / 2 - 250, window.innerHeight + 25, THREE.SpriteAlignment.bottomLeft);	
+		bloodSprite.scale.set(FullBloodSprite, 50, 1.0);		
+		pitchObject.add(bloodSprite);
+		
 		$('#skillMight').css('display', 'none');
 		$('#skillPush').css('display', 'none');
 		$('#skillPush').css('backgroundImage', 'linear-gradient(90deg, #008B8B 0%, #008B8B ' + 100 + '%, #00CDCD 0%, #00CDCD 100%');
@@ -176,15 +191,18 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	var onMouseMove = function(event) 
 	{
-		if (scope.enabled === false) return;
+		if(!theEnd)
+		{
+			if (scope.enabled === false) return;
 
-		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-		var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+			var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+			var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-		yawObject.rotation.y -= movementX * mouseSensitivity;
-		pitchObject.rotation.x -= movementY * mouseSensitivity;
+			yawObject.rotation.y -= movementX * mouseSensitivity;
+			pitchObject.rotation.x -= movementY * mouseSensitivity;
 
-		pitchObject.rotation.x = Math.max(-PI_2, Math.min(PI_2, pitchObject.rotation.x));
+			pitchObject.rotation.x = Math.max(-PI_2, Math.min(PI_2, pitchObject.rotation.x));
+		}
 	};
 
 	this.onKeyDown = function(event, objects) 
@@ -211,6 +229,13 @@ THREE.FirstPersonControls = function(camera, borders)
 				break;
 
 			case 32: // space
+				if(level > 1 && typeSkillEnd == 1 && !skillJump)
+				{
+					// тут убивалка людей
+					skill = true;
+					skillJump = true;
+					SkillJump(objects);
+				}
 				if (canJump === true)
 				{
 					velocity.y += jumpPower / coordDivisor;
@@ -224,7 +249,7 @@ THREE.FirstPersonControls = function(camera, borders)
 				break;
 				
 			case 81: //q доступно только на 3 уровне
-				if(level > 1 && !skillPush)
+				if(level > 1 && !skillPush && typeSkillEnd == 0)
 				{
 					skill = true;
 					skillPush = true;
@@ -243,6 +268,24 @@ THREE.FirstPersonControls = function(camera, borders)
 		}
 	};
 
+	var SkillJump = function(objects)
+	{
+		if(skillJump)
+		{
+			var vector = new THREE.Vector3(0, 0, -1);
+			vector.applyQuaternion(yawObject.quaternion);	
+			 
+			for(var i = 0; i < objects.length; i++)
+			{
+				var distance = Math.pow(Math.pow(yawObject.position.x - objects[i].getMesh(1).position.x, 2) + Math.pow(yawObject.position.z - objects[i].getMesh(1).position.z, 2), 0.5);
+				if(distance < 0.04)
+				{
+					objects[i].setBlood(true);
+				}
+			}
+		}
+	}
+	
 	var onKeyUp = function(event) 
 	{
 		switch(event.keyCode) 
@@ -304,8 +347,12 @@ THREE.FirstPersonControls = function(camera, borders)
 						var distance = Math.pow(Math.pow(yawObject.position.x - objects[i].getMesh(1).position.x, 2) + Math.pow(yawObject.position.z - objects[i].getMesh(1).position.z, 2), 0.5);
 						if(distance < 0.05)
 						{
-							objects[i].setBlood(true);
-							kol_dae ++;
+							objects[i].HpDec();
+							if(objects[i].getHp()==0)
+							{
+								objects[i].setBlood(true);
+								kol_dae ++;
+							}
 						}
 					}
 				}
@@ -358,7 +405,14 @@ THREE.FirstPersonControls = function(camera, borders)
 	this.update = function(delta) 
 	{	
 		delta *= 0.1;
-
+		if(exp > 0)
+		{		
+			FullBloodSprite -= 0.5;
+			if(FullBloodSprite < 0) FullBloodSprite = 0;
+			if(FullBloodSprite <= 50) hp -= 0.5;
+		}
+		bloodSprite.scale.set(FullBloodSprite, 50, 1.0);
+		bloodSprite.position.set( window.innerWidth / 2 - FullBloodSprite, window.innerHeight + 25, 0 );
 		if(hp + 0.05 * delta < maxhp) hp += 0.05 * delta;
 		
 		if(move_hand)
@@ -443,12 +497,13 @@ THREE.FirstPersonControls = function(camera, borders)
 		// скилл брони включен
 		if(skillMight) 
 		{ 
-			skillMightCount += delta;
+			skillMightCount += delta * 0.4;
 			$('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #2E8B57 0%, #2E8B57 ' + (100 * (50 - skillMightCount) / 50) + '%, #9AFF9A 0%, #9AFF9A 100%');
 			if(skillMightCount > 50) 
 			{
 				skillMight = false;
-				skillMightTime += delta;
+				skillMightTime += delta * 0.4;
+				skillMightCount = 0;
 			}
 		}
 		
@@ -457,8 +512,22 @@ THREE.FirstPersonControls = function(camera, borders)
 			if(skillMightTime >= 500) skillMightTime = 0;
 			else
 			{
-				skillMightTime += delta;
+				skillMightTime += delta * 0.4;
 				$('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #2E8B57 0%, #2E8B57 ' + (100 * skillMightTime / 500) + '%, #9AFF9A 0%, #9AFF9A 100%');
+			}
+		}
+		
+		if(skillJump)
+		{
+			if(skillJumpTime < 500)
+			{
+				skillJumpTime += delta * 0.4;
+				$('#skillPush').css('backgroundImage', 'linear-gradient(90deg, #008B8B 0%, #008B8B ' + (100 * skillJumpTime / 500) + '%, #00CDCD 0%, #00CDCD 100%');
+			}
+			else
+			{
+				skillJumpTime = 0;
+				skillJump = false;
 			}
 		}
 		if(blood_show = true)
@@ -466,8 +535,6 @@ THREE.FirstPersonControls = function(camera, borders)
 			blood_show = false;
 			l_blood.material.opacity = 0;
 			r_blood.material.opacity = 0;
-			//l_blood.position.set(-1000, window.innerHeight, 0);		
-			//r_blood.position.set(window.innerWidth + 1000, window.innerHeight, 0);
 		}
 	};
 	
@@ -494,8 +561,6 @@ THREE.FirstPersonControls = function(camera, borders)
 			
 			l_blood.material.opacity = Math.pow(1 - hp / maxhp, 0.25);
 			r_blood.material.opacity = Math.pow(1 - hp / maxhp, 0.25);
-			//l_blood.position.set(-200, window.innerHeight + 180, 0);		
-			//r_blood.position.set(window.innerWidth + 200, window.innerHeight + 180, 0);
 			blood_show = true;			
 		}
 	};
@@ -523,6 +588,8 @@ THREE.FirstPersonControls = function(camera, borders)
 	this.encreaseEXP = function(delta, timeLevel)
 	{
 		exp += delta;
+		if(FullBloodSprite + 2 <= 250) FullBloodSprite += 2;
+		else FullBloodSprite = 250;
 		if(exp >= state_opt_level[level])
 		{
 			exp = 0;
@@ -538,9 +605,18 @@ THREE.FirstPersonControls = function(camera, borders)
 			}
 			if(level == 2)
 			{
+				typeSkillEnd = getRandomInt(0, 1);
+				if(typeSkillEnd == 0) $('#textSkillPush').text('Ударная волна');
+				else $('#textSkillPush').text('Прыжок смерти');
 				$('#skillPush').css('display', 'block');
 			}
+			if(level == 3) theEnd = true;
 		}
+	};
+	
+	this.getTheEnd = function()
+	{
+		return theEnd;
 	};
 	
 	this.getLevel = function()
@@ -616,5 +692,20 @@ THREE.FirstPersonControls = function(camera, borders)
 				break;
 		}
 		return distance;
+	};
+	
+	this.noneDis = function()
+	{
+		pitchObject.remove(l_blood);
+		pitchObject.remove(r_blood);
+		pitchObject.remove(l_hand);
+		pitchObject.remove(r_hand);
+		pitchObject.remove(bloodSprite);
+		yawObject.remove(mini_titan);
+	};
+	
+	this.setZeroRotation = function()
+	{
+		pitchObject.rotation.x = 0;
 	};
 };

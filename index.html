@@ -26,15 +26,17 @@
 		<script src="SpriteAnimator.js"></script>
 		<script src="Blood.js"></script>
 		<script src="Cannon.js"></script>
+		<script src="TitanFire.js"></script>
+		<script src="Title.js"></script>
 
 		<script src="loaders/ColladaLoader.js"></script>
 		<script src="loaders/ModelsLoader.js"></script>
 	</head> 
-	<body> 
+	<body>
 		<div id="pointer-lock-element"></div>
 		<div id = "menu">
 			<div class = "card">
-				<div class="btn btn-primary btn-lg" ><text id = "state"></text></div>
+				<div class="btn btn-primary btn-lg" id = "stateP"><text id = "state"></text></div>
 				<div class="btn btn-primary btn-lg" id = "live">Жизнь</div>
 				<div class="btn btn-primary btn-lg" id = "oput">Опыт</div>
 			</div>
@@ -62,16 +64,17 @@
 							<div id = "sound">
 								<table border = "0" CELLPADDING = 0 CELLSPACING = 0>
 									<tbody><tr>
-										<td class = "td_s"><img id = "m1" src = "textures/volumee.png" onmousedown = "sound.volume(0);" onmouseout = "document.getElementById('m1').width = 20;" onmouseover = "document.getElementById('m1').width = 23;"/></td>
-										<td class = "td_s"><img id = "m2" src = "textures/volume-off.png" onmousedown = "sound.volumeNone();" onmouseout = "document.getElementById('m2').width = 20;" onmouseover = "document.getElementById('m2').width = 23;"/></td>
-										<td class = "td_s"><img id = "m3" src = "textures/volume.png" onmousedown = "sound.volume(1);" onmouseout = "document.getElementById('m3').width = 20;" onmouseover = "document.getElementById('m3').width = 23;"/></td>
+										<td class = "td_s"><img id = "m1" src = "textures/volumee.png" onmousedown = "sound.volume(0); soundEnd.volume(0);" onmouseout = "document.getElementById('m1').width = 20;" onmouseover = "document.getElementById('m1').width = 23;"/></td>
+										<td class = "td_s"><img id = "m2" src = "textures/volume-off.png" onmousedown = "sound.volumeNone(); soundEnd.volumeNone();" onmouseout = "document.getElementById('m2').width = 20;" onmouseover = "document.getElementById('m2').width = 23;"/></td>
+										<td class = "td_s"><img id = "m3" src = "textures/volume.png" onmousedown = "sound.volume(1); soundEnd.volume(1);" onmouseout = "document.getElementById('m3').width = 20;" onmouseover = "document.getElementById('m3').width = 23;"/></td>
 									</tr></tbody>
 								</table>
 							</div>
-							<p>Бег: awsd </br> Прыжки: пробел</br> Пауза и выход в меню: esc</br> Закрыть информационные таблички: левая кнопка мыши</br></br> 
-							Игра идет от лица титана, так что не пытайтесь сдружиться с людьми, они не поймут вашего рвения, ибо их цель убить вас, как можно быстрее.
-							Для этого они будут целится в заднюю часть вашего тела, старайтесь избегать близких стычек вашего затылка с человеком. Огонь - смерть, лес и домики - ловушки. 
-							Миникарта в левом верхнем углу показывает ваше место положение. Остальные подробности уже в самой игре. Удачи!
+							<p>Бег: awsd </br> Прыжки: пробел</br> Пауза и выход в меню: esc</br> Закрыть информационные таблички: левая кнопка мыши</br>Убить человека: левая кнопка мыши</br></br> 
+							Красная линия около рук - шкала жажды крови, чем меньше она, тем сильнее жажда, которая с течением времени вредит твоему здоровью.</br></br> 
+							Игра идет от лица титана, так что не пытайся сдружиться с людьми, они не поймут твоего рвения, ибо их цель убить тебя, как можно быстрее.
+							Их основная цель - забить тебя до смерти в спину, так что не допускай близкого контакта их со своим тылом. Огонь по краю - смерть, огонь на поле - ловушка. 
+							Миникарта в левом верхнем углу показывает твое место положение. Удачи!
 							</p>
 						</div>
 					</div>
@@ -131,10 +134,8 @@
 						<div class="panel-body">
 							Всех секретов не раскроем, но заинтригуем. Всего в игре 3 уровня, на каждом из которых есть свои приятности, 
 							а так же подвохи и трудности. Ну и так, как каждый человек играет своим неповторимым стилем, то мы сделали 
-							специальный бонус - звания титана, за которого вы играли. Всего 15 званий, их можно открыть, приложив некоторое усилие.
-							Два из этих званий особенных. Первый - выявляет лучшего в одной в определенном виде (раскрывать не будем в чем конкретно), 
-							причем лучший всегда один. Если вы полочили это звание, то следующий человек, получивший это звание, первзашел вас.
-							Второй - открывает новые возможности в игре, вернее расширяет игровую сферу. 
+							специальный бонус - звания для титана, за которого вы играли. Всего 15 званий, их можно открыть, приложив некоторые усилия.
+							Но есть одно особенное, которое подарит, открывшему человеку, некоторую плюшку. 
 						</div>
 					</div>
 				   </div>
@@ -151,22 +152,21 @@
 		
 		<div class = "leaning">
 			<p class = "text">
-				Мир жесток - говорят люди, но что они могут знать о мыслях и чувствах титанов? Ничего. 
-				Для людей титаны - животные, что пытаются истребить человеческий род... Но ведь с титанами тоже самое?
+				Представь себя на месте человека, на которого охотится толпа титанов. Представил? Забудь. В нашем мире все наоборот. 
+				Ты титан и на тебя объявили охоту люди. Они беспощадны, жестоки и изощрены.
 			</p>
 		</div>
 		
 		<div class = "leaning">
 			<p class = "text">
-				Только представь себя на месте не брошенного человека среди титанов, а титана среди кровожадных людей! 
-				Ты рястерян, ты не знаешь, что делать и как поступать, ты как младенец посреди улицы в полном одиночестве.
+				Убивай (левая кнопка мыши) людей и развивайся. Достигни величия и истреби человеческий род, затми всех своих предшественников,
+				погрузи этот мир в вечный огонь.
 			</p>
 		</div>
 		
 		<div class = "leaning">
 			<p class = "text">
-				Беги-беги! Спасайся и убивай всех людей, что встретятся тебе на пути! 
-				Если не ты их, то они тебя! Истреби всех людей и проломи стену, вернись к своему племени и обрети свободу.
+				Но не забывай, что ты не бессмертен, береги спину и не попадай в ловушки. Не дай безумию (жажде крови) истощить твое тело.
 			</p>
 		</div>
 		

@@ -1,7 +1,8 @@
 var Sound = function ( sources) 
 {
 	var audio = document.createElement( 'audio' );
-
+	var pauseFl = true;
+	
 	for ( var i = 0; i < sources.length; i ++ ) 
 	{
 		var source = document.createElement( 'source');
@@ -13,12 +14,19 @@ var Sound = function ( sources)
 	{
 		audio.play();
 		audio.loop = true;
+		pauseFl = true;
 	};
 	
 	this.pause = function () 
 	{
 		audio.pause();
+		pauseFl = false;
 	}; 
+	
+	this.getPause = function()
+	{
+		return pauseFl;
+	}
 	
 	this.volume = function (vol) 
 	{

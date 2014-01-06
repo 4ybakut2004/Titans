@@ -1,4 +1,4 @@
-var Animator = function(_material, _scale, _startOffset, _offsetDelta, _period)
+var Animator = function(_material, _scale, _startOffset, _offsetDelta, _period, _linesCount)
 {
 	var material    = _material;
 	var scale       = _scale;
@@ -8,8 +8,13 @@ var Animator = function(_material, _scale, _startOffset, _offsetDelta, _period)
 	var time        = 0;
 	var forCount    = 0;
 
+	_linesCount     = _linesCount || 1;
+
 	material.uvOffset.x = startOffset;
 	material.uvScale.x  = scale;
+
+	material.uvOffset.y = 1.0 - 1.0 / _linesCount;
+	material.uvScale.y  = 1.0 / _linesCount;
 
 	this.update = function(delta)
 	{
@@ -28,6 +33,16 @@ var Animator = function(_material, _scale, _startOffset, _offsetDelta, _period)
 			time = 0;
 		}
 	};
+
+	this.setLine = function(lineNumber)
+	{
+		if(lineNumber > _linesCount)
+		{
+			lineNumber = _linesCount;
+		}
+
+		material.uvOffset.y = 1.0 - lineNumber / _linesCount;
+	}
 	
 	this.isFirst = function()
 	{
