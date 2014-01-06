@@ -3,7 +3,7 @@ var Terrain = function(_scene, loader)
 	var terrain;
 
 	var count_trees = 40 * 2;
-	var count_houses = 0;
+	var count_houses = 5;
 	var count_cannons = 5;
 	
 	var cannon = [];
