@@ -31,6 +31,9 @@
 
 		<script src="loaders/ColladaLoader.js"></script>
 		<script src="loaders/ModelsLoader.js"></script>
+		
+		<script src="ParticleEngine.js"></script>
+		<script src="ParticleEngineExamples.js"></script>
 	</head> 
 	<body>
 		<div id="pointer-lock-element"></div>
@@ -62,7 +65,7 @@
 					<div id="collapseOne" class="panel-collapse collapse in">
 						<div class="panel-body">
 							<div id = "sound">
-								<table border = "0" CELLPADDING = 0 CELLSPACING = 0>
+								<table border = "0" CELLPADDING = 0>
 									<tbody><tr>
 										<td class = "td_s"><img id = "m1" src = "textures/volumee.png" onmousedown = "sound.volume(0); soundEnd.volume(0);" onmouseout = "document.getElementById('m1').width = 20;" onmouseover = "document.getElementById('m1').width = 23;"/></td>
 										<td class = "td_s"><img id = "m2" src = "textures/volume-off.png" onmousedown = "sound.volumeNone(); soundEnd.volumeNone();" onmouseout = "document.getElementById('m2').width = 20;" onmouseover = "document.getElementById('m2').width = 23;"/></td>
@@ -70,7 +73,7 @@
 									</tr></tbody>
 								</table>
 							</div>
-							<p>Бег: awsd </br> Прыжки: пробел</br> Пауза и выход в меню: esc</br> Закрыть информационные таблички: левая кнопка мыши</br>Убить человека: левая кнопка мыши</br></br> 
+							<p>Бег: wasd </br> Прыжки: пробел</br> Пауза и выход в меню: esc</br> Закрыть информационные таблички: левая кнопка мыши</br>Убить человека: левая кнопка мыши</br></br> 
 							Красная линия около рук - шкала жажды крови, чем меньше она, тем сильнее жажда, которая с течением времени вредит твоему здоровью.</br></br> 
 							Игра идет от лица титана, так что не пытайся сдружиться с людьми, они не поймут твоего рвения, ибо их цель убить тебя, как можно быстрее.
 							Их основная цель - забить тебя до смерти в спину, так что не допускай близкого контакта их со своим тылом. Огонь по краю - смерть, огонь на поле - ловушка. 
@@ -150,26 +153,53 @@
 			</div>
 		</div>	
 		
-		<div class = "leaning">
-			<p class = "text">
-				Представь себя на месте человека, на которого охотится толпа титанов. Представил? Забудь. В нашем мире все наоборот. 
-				Ты титан и на тебя объявили охоту люди. Они беспощадны, жестоки и изощрены.
-			</p>
+		<div id = "fullSize">
+			<div class = "leaning">
+				<p class = "text">
+					Представь себя на месте человека, на которого охотится толпа титанов. Представил? Забудь. В нашем мире все наоборот. 
+					Ты титан и на тебя объявили охоту люди. Они беспощадны, жестоки и изощрены.
+				</p>
+			</div>
+			
+			<div class = "leaning">
+				<p class = "text">
+					Убивай (левая кнопка мыши) людей и развивайся. Достигни величия и истреби человеческий род, затми всех своих предшественников,
+					погрузи этот мир в вечный огонь.
+				</p>
+			</div>
+			
+			<div class = "leaning">
+				<p class = "text">
+					Но не забывай, что ты не бессмертен, береги спину и не попадай в ловушки. Не дай безумию (жажде крови) истощить твое тело.
+				</p>
+			</div>
+			
+			<div class = "errorMgs" id = "GLerror">
+			</div>
+
+			<div class = "errorMgs" id = "PointerLockError">
+					<p>Ваш браузер не поддерживает блокировку указателя</p>
+					<p>За поддержкой обращайтесь <a style="color: black;" href="https://developer.mozilla.org/en-US/docs/WebAPI/Pointer_Lock?redirectlocale=en-US&redirectslug=API%2FPointer_Lock_API#Browser_compatibility">сюда</a></p>
+			</div>
+
+			<div class = "errorMgsFull">
+				<p>
+				Если вы видите белую страницу, и нет никаких указаний о неисправностях, то скорее всего у вас отключена в браузере
+				очень важная вещь - возможность скрыть указатель мыши, поэтому:<br/>
+				<b>Chrome</b>: во-первых, убедитесь, что ваша версия браузера не из прошлого века, во-вторых, изменити один параметр настроек. 
+				Для этого необхоимо: Настройки - Показать дополнительные настройки - Личные данные - Настройки контента... - Указатель мыши 
+				- Предупреждать, что сайт пытается скрыть указатель мыши (рекомендуется).
+				<br/>
+				<b>Mozilla</b>: обновите браузер до последней версии.
+				<br/>
+				<b>Opera</b>: увы, данный браузер не поддерживает сию функцию, поэтому рекомендуем вам установить 
+				один из выше указанных браузеров.
+				</p>
+			</div>
+			
+			<div class="models-loading">
+			</div>
 		</div>
-		
-		<div class = "leaning">
-			<p class = "text">
-				Убивай (левая кнопка мыши) людей и развивайся. Достигни величия и истреби человеческий род, затми всех своих предшественников,
-				погрузи этот мир в вечный огонь.
-			</p>
-		</div>
-		
-		<div class = "leaning">
-			<p class = "text">
-				Но не забывай, что ты не бессмертен, береги спину и не попадай в ловушки. Не дай безумию (жажде крови) истощить твое тело.
-			</p>
-		</div>
-		
 		<div id = "bouble">
 		</br><p style = "padding: 10px;">Тык - левая кнопка мыши</p>
 		</div>
@@ -178,14 +208,28 @@
 			<div class="modal-dialog">
 			  <div class="modal-content">
 				<div class="modal-body ">
-					<div id = "game_over">
-						<p class = "heard"><b>Вы проиграли...</b></p>
-							<div id = "text_over_reil"></div>
-						<textarea id = "relis">
-						</textarea>
-					</div>
+					<p class = "heardEnd"><b>Игра закончена...</b></p>
+					<div id = "textOver"></div>				
 				</div>
 				<div class="modal-footer">
+					<div class="panel-group" id="accordion">
+					 <div class="panel panel-default">
+						<div class="panel-heading">
+						  <h4 class="panel-title">
+							<a class="panel-title-a" data-toggle="collapse" data-parent="#accordion" href="#collapsFive">
+							  <b class = "heard" style = "text-align:center;">Html код</b>
+							</a>
+						  </h4>
+						</div>
+						<div id="collapsFive" class="panel-collapse collapse">
+							<div class="panel-body">
+								<textarea id = "relis">
+								</textarea> 
+							</div>
+						</div>
+					 </div>
+					</div>
+					</br>
 					<button type="button" class="btn btn-default" data-dismiss="modal" onclick="restart();">Начать заново</button>
 				</div>
 			  </div>

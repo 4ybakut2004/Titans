@@ -1,4 +1,4 @@
-var Fire = function(typeFireNumb)
+var Fire = function(typeFireNumb, loader)
 {
 	var fire;
 	var animator;
@@ -9,9 +9,11 @@ var Fire = function(typeFireNumb)
 	var typeFire = new Array('textures/fire.png', 'textures/fire2.png', 'textures/fire3.png');
 	var generate = function()
 	{
-		var texture = THREE.ImageUtils.loadTexture(typeFire[typeFireNumb]);
+		var texture = loader.fire['./' + typeFire[typeFireNumb]].clone();
+		texture.needsUpdate = true;
 		texture.anisotropy = 16;
-		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true});
+		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true, transparent : true});
+		// blending: THREE.NormalBlending, depthTest: false
 		fire = new THREE.Sprite(material);
 		switch(typeFireNumb)
 		{

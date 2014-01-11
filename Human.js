@@ -13,7 +13,7 @@ var HumanPosition =
 
 var typeURL = new Array('textures/humans/human_2.png', 'textures/humans/human_1.png', 'textures/humans/human_3.png', 'textures/humans/human_4.png');
 
-var Human = function(humanType)
+var Human = function(humanType, loader)
 {
 	var human;
 	var animator;
@@ -81,15 +81,16 @@ var Human = function(humanType)
 				put = 2;
 				
 				var texture_l = THREE.ImageUtils.loadTexture('textures/redline.png');
-				var material_l = new THREE.SpriteMaterial({map: texture_l, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true});
+				var material_l = new THREE.SpriteMaterial({map: texture_l, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true, transparent : true});
 				redline = new THREE.Sprite(material_l);
 				redline.scale.set( 0.008, 0.002, 1.0 );
 				break;
 		}
 
-		var texture = THREE.ImageUtils.loadTexture(texURL);
+		var texture = loader.humans['./' + texURL].clone();
+		texture.needsUpdate = true;
 		texture.anisotropy = 16;
-		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true});
+		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true, transparent : true});
 		human = new THREE.Sprite(material);
 		human.scale.set( height, height, 1.0 );
 		
@@ -225,7 +226,7 @@ var Human = function(humanType)
 	{
 		for(var i = 0; i < humans.length; i++)
 		{
-			if(i != number)
+			if(i != number && humans[i].getFlying() == flying)
 			{
 				var dist = Math.pow(Math.pow(human.position.x - humans[i].getMesh(1).position.x, 2) + Math.pow(human.position.z - humans[i].getMesh(1).position.z, 2), 0.5);
 				if(dist < 0.05)
@@ -482,7 +483,7 @@ var Human = function(humanType)
 	
 	this.TerrainPart = function()
 	{
-		return (human.position.z > 0.9 || human.position.z < -1.1 || human.position.x > 1.1 || human.position.x < -1.1);
+		return (human.position.z > 1.1 || human.position.z < -1.1 || human.position.x > 1.1 || human.position.x < -1.1);
 	};
 	
 	this.getType = function()
@@ -523,5 +524,10 @@ var Human = function(humanType)
 		{
 			animator.setLine(5);
 		}
+	};
+
+	this.getFlying = function()
+	{
+		return flying;
 	};
 };

@@ -1,4 +1,4 @@
-var titanFire = function(typeFireNumb)
+var titanFire = function(loader)
 {
 	var fire;
 	var fireT;
@@ -11,24 +11,24 @@ var titanFire = function(typeFireNumb)
 	
 	var generate = function()
 	{
-		var texture = THREE.ImageUtils.loadTexture('textures/humans/fireTitan.png');
-		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true});
+		var texture = loader.fireTitan['./textures/humans/fireTitan.png'];
+		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true, transparent : true});
 		fire = new THREE.Sprite(material);
-		fire.material.alphaTest = 0.5;
+		//fire.material.alphaTest = 0.5;
 
 		fire.scale.set( 0.08, 0.16, 1.0 );
 		animator = new Animator(material, 0.125, 0, 0.125, 250);
 		
-		texture = THREE.ImageUtils.loadTexture('textures/humans/fireTitan3.png');
-		material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true});
+		texture = loader.fireTitan['./textures/humans/fireTitan3.png'];
+		material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true, transparent : true});
 		fireT = new THREE.Sprite(material);
-		fireT.material.alphaTest = 0.5;
+		//fireT.material.alphaTest = 0.5;
 
 		fireT.scale.set( 0.08, 0.16, 1.0 );
 		animatorDuh = new Animator(material, 0.125, 0, 0.125, 100);
 		
 		texture = THREE.ImageUtils.loadTexture('textures/explosion_1.png');
-		material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true});
+		material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true, transparent : true});
 		ball = new THREE.Sprite(material);
 		ball.material.alphaTest = 0.5;
 
@@ -55,7 +55,7 @@ var titanFire = function(typeFireNumb)
 			{
 				fireT.position.x = fire.position.x;
 				fireT.position.z = fire.position.z;
-				fireT.position.y = fire.position.y;
+				fireT.position.y = fire.position.y + 0.01;
 				fireT.material.opacity = 0;
 				
 				ball.position.x = fire.position.x;

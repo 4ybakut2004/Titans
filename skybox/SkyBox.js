@@ -1,15 +1,21 @@
-var SkyBox = function (path)
+var SkyBox = function (loader)
 {
+    var tex1 = loader.skybox['./skybox/grimmnight_rt.jpg'];
+	var tex2 = loader.skybox['./skybox/grimmnight_lf.jpg'];
+	var tex3 = loader.skybox['./skybox/grimmnight_up.jpg'];
+	var tex4 = loader.skybox['./skybox/grimmnight_dn.jpg'];
+	var tex5 = loader.skybox['./skybox/grimmnight_bk.jpg'];
+	var tex6 = loader.skybox['./skybox/grimmnight_ft.jpg'];
 	var skyBox = new THREE.Mesh(new THREE.CubeGeometry(6, 6, 6, 7, 7, 7),
 								new THREE.MeshFaceMaterial([
-										loadTexture( path + 'grimmnight_rt.jpg' ), // right
-										loadTexture( path + 'grimmnight_lf.jpg' ), // left
-										loadTexture( path + 'grimmnight_up.jpg' ), // top
-										loadTexture( path + 'grimmnight_dn.jpg' ), // bottom
-										loadTexture( path + 'grimmnight_bk.jpg' ), // back
-										loadTexture( path + 'grimmnight_ft.jpg' )  // front
+										new THREE.MeshBasicMaterial({map: tex1, overdraw: true}),
+										new THREE.MeshBasicMaterial({map: tex2, overdraw: true}),
+										new THREE.MeshBasicMaterial({map: tex3, overdraw: true}),
+										new THREE.MeshBasicMaterial({map: tex4, overdraw: true}),
+										new THREE.MeshBasicMaterial({map: tex5, overdraw: true}),
+										new THREE.MeshBasicMaterial({map: tex6, overdraw: true})
 									]));
-	skyBox.rotation.y = 3.14 / 2;
+	skyBox.rotation.y = 3.14 / 2 + 5 * 3.14 / 4;
 	skyBox.scale.x = - 1;
 
 	this.getMesh = function()

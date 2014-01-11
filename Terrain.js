@@ -2,8 +2,8 @@ var Terrain = function(_scene, loader)
 {
 	var terrain;
 
-	var count_trees = 40 * 2;
-	var count_houses = 5;
+	var count_trees = 15 * 2;
+	//var count_houses = 5;
 	var count_cannons = 5;
 	
 	var cannon = [];
@@ -16,7 +16,8 @@ var Terrain = function(_scene, loader)
 
 	var createForest = function(x, y, z, rotation, width)
 	{
-		texture = THREE.ImageUtils.loadTexture( "textures/forest.png" );
+		texture = loader.trees['./textures/forest.png'].clone();
+		texture.needsUpdate = true;
       	texture.anisotropy = 16;
       	var material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent : true, side: THREE.DoubleSide});
       	material.alphaTest = 0.5;
@@ -33,7 +34,7 @@ var Terrain = function(_scene, loader)
 	// Создает дерево
 	var spawnTree = function(treeType, numbTree)
 	{
-		var tree = new Trees(treeType);
+		var tree = new Trees(treeType, loader);
 		if(numbTree < count_trees / 2.0)
 		{
 			tree.getMesh(1).position.x = (getRandomInt(10, 290) - 150) / 100.0;
@@ -46,7 +47,7 @@ var Terrain = function(_scene, loader)
 			tree.getMesh(1).rotation.y =  -3.14 / 3;
 		}
 		
-		tree.getMesh(1).position.y = -0.021;
+		tree.getMesh(1).position.y = -0.055;
 		
 		tree.getMesh(0).position.x = tree.getMesh(1).position.x;
 		tree.getMesh(0).position.z = tree.getMesh(1).position.z;
@@ -63,43 +64,48 @@ var Terrain = function(_scene, loader)
 
 		if(houseType == 0)
 		{
-			house.getMesh().rotation.y = 3.14 / 4 + 3.14;
+			house.getMesh().rotation.y = 3.14 / 6;
 		}
 
-		if(houseType == 1)
-		{
-			house.getMesh().rotation.y = 3.14 / 2 + 3.14 * 1.1;
-		}
-
-		if(houseType == 2)
-		{
-			house.getMesh().rotation.y = 3.14 / 2;
-		}
-
-		house.getMesh().position.x = -1.5 + number * 0.6;
-		house.getMesh().position.z = 1.4 - getRandomInt(0, 300) / 1000;
-
-		house.getMesh().position.y = - 0.074;
+		house.getMesh().position.z = 2.2;
 		
 		return house;
 	};
 
 	var spawnCannon = function(number)
 	{
-		var cannon = new Cannon(loader.cannons[0]);
+		var cannon = new Cannon(loader.cannons[0], loader);
 
 		cannon.getObject().rotation.y = - 3.14 / 2;
 
 		cannon.getObject().position.x = -0.9 + number * 0.4;
-		cannon.getObject().position.z = 0.95;
-		cannon.getObject().position.y = - 0.074;
+		//cannon.getObject().position.z = 1.2 + Math.abs(number - 2.5) / 10;
+		switch(number)
+		{
+			case 0:
+				cannon.getObject().position.z = 1.32;
+			    break;
+			case 1:
+				cannon.getObject().position.z = 1.25;
+			    break;
+			case 2:
+				cannon.getObject().position.z = 1.24;
+			    break;
+			case 3:
+				cannon.getObject().position.z = 1.27;
+			    break;
+			case 4:
+				cannon.getObject().position.z = 1.35;
+			    break;
+		}
+		cannon.getObject().position.y = 0.09;
 
 		return cannon;
 	};
 	
 	var generate = function(_scene)
 	{
-      	var texture = THREE.ImageUtils.loadTexture( "textures/grass.jpg" );
+      	var texture = loader.floor['./textures/grass.jpg'];
 		texture.wrapS = THREE.RepeatWrapping;
 		texture.wrapT = THREE.RepeatWrapping;
 		texture.repeat.set( 30, 30 );
@@ -113,7 +119,7 @@ var Terrain = function(_scene, loader)
 		}
       	terrain = new THREE.Mesh(geometry, material);
       	terrain.rotation.x = - 3.14 / 2;
-		terrain.castShadow = false;
+		//terrain.castShadow = false;
 		terrain.receiveShadow = true;
 		_scene.add(terrain);
 		
@@ -151,15 +157,9 @@ var Terrain = function(_scene, loader)
 			_scene.add(tree.getMesh(1));
 			_scene.add(tree.getMesh(0));
 		}
-		
-		for(var i = 0; i < count_houses; i++)
-		{
-			var type;
-			if(i < 2 || i > count_houses - 3) type = getRandomInt(0, 2);
-			else type = getRandomInt(0, 1);
-			var house = spawnHouse(type, i);
-			_scene.add(house.getMesh());
-		}
+
+		var house = spawnHouse(0, 0);
+		_scene.add(house.getMesh());
 
 		for(var i = 0; i < count_cannons; i++)
 		{
@@ -216,16 +216,16 @@ var Terrain = function(_scene, loader)
 						_scene_n.add(cannon[i].getMeshHole());
 						cannon[i].setaddVis(true);
 						
+						controls.setFullGun();
 						// запомнить вектор от пушки к титану
-					
-						cannonPosK = new THREE.Vector2(- cannon[i].getObject().position.x + camera.position.x, - cannon[i].getObject().position.z + camera.position.z);
+							
+						cannonPosK = new THREE.Vector3(- cannon[i].getObject().position.x + camera.position.x, - cannon[i].getObject().position.y + camera.position.y - 0.01, - cannon[i].getObject().position.z + camera.position.z);
 						cannon[i].setVectorHole(cannonPosK);
 					}
 					
-					cannon[i].getMeshHole().position.y += 0.0008;
 					dist = Math.pow(Math.pow(cannon[i].getMeshHole().position.x - cannon[i].getObject().position.x, 2) + Math.pow(cannon[i].getMeshHole().position.z - cannon[i].getObject().position.z, 2), 0.5);
 					
-					if(dist > 0.7)
+					if(dist > 1.0 || cannon[i].getMeshHole().position.y < 0)
 					{
 						// взрыв
 						cannon[i].setVecBoom(cannon[i].getMeshHole());
@@ -244,6 +244,7 @@ var Terrain = function(_scene, loader)
 						dist = 0;
 						cannon[i].setaddVis(false);
 						controls.decreaseHP(15);
+						controls.setGun();
 					}
 					
 					if(cannon[i].getBoom() > 0 )

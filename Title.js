@@ -19,8 +19,8 @@ var Title = function()
 	{	
 		for(var i = 0; i < 2; i++)
 		{
-			var titleF = createHand(nameTitle[i], window.innerWidth / 2 - 600, window.innerHeight + 800 * i, THREE.SpriteAlignment.bottomLeft);		
-			titPos.push(window.innerHeight + 400 * i);
+			var titleF = createHand(nameTitle[i], window.innerWidth / 2 - 600, window.innerHeight + 500 * (i + 1), THREE.SpriteAlignment.bottomLeft);		
+			titPos.push(window.innerHeight + 500 * (i + 1));
 			title.push(titleF);
 		}
 	};

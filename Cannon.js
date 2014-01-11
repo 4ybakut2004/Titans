@@ -1,4 +1,4 @@
-var Cannon = function(model)
+var Cannon = function(model, loader)
 {
 	var cannon;
 	var velocity   = new THREE.Vector3(0, 0, 0); // Направление скорости
@@ -10,7 +10,7 @@ var Cannon = function(model)
 	var object3d = new THREE.Object3D();
 	
 	var human;
-	var holeVect = new THREE.Vector2(0, 0);
+	var holeVect = new THREE.Vector3(0, 0, 0);
 	var holeBoom;
 	
 	var animator;
@@ -30,7 +30,7 @@ var Cannon = function(model)
 		hole = new THREE.Sprite(material);
 		hole.scale.set( 0.007, 0.007, 1.0 );
 		
-		human = new Human(0);
+		human = new Human(0, loader);
 		human.getMesh(1).position.x += 0.05;
 		human.getMesh(1).position.y += 0.005;
 		
@@ -112,10 +112,11 @@ var Cannon = function(model)
 	
 	this.setVectorHole = function(varVect)
 	{
-		var v = new THREE.Vector2(varVect.x, varVect.y);
+		var v = new THREE.Vector3(varVect.x, varVect.y, varVect.z);
 		v = v.normalize();
 		holeVect.x = v.x;
 		holeVect.y = v.y;
+		holeVect.z = v.z;
 	};
 	generate();
 	
@@ -146,11 +147,13 @@ var Cannon = function(model)
 		
 		if(visible)
 		{
-			var x = holeVect.x * 0.003 * delta;
-			var y = holeVect.y * 0.003 * delta;
+			var x = holeVect.x * 0.005 * delta;
+			var y = holeVect.y * 0.005 * delta;
+			var z = holeVect.z * 0.005 * delta;
 			
 			hole.translateX(x);
-			hole.translateZ(y);
+			hole.translateY(y);
+			hole.translateZ(z);
 		}
 		
 		if(side > 0)

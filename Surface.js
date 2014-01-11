@@ -42,7 +42,7 @@ var Surface = function()
 	var humanSpawnTime1 = 0;
 	var humanSpawnTime2 = 0;
 	var maxHumans       = 15;
-	var maxFlyingHumans = 10;
+	var maxFlyingHumans = 5;
 	var flyingHumansCount = 0;
 	var disChangeLine   = 20;
 	
@@ -51,6 +51,7 @@ var Surface = function()
 	var humanDislocation = Dislocations.Terrain;
 
 	var skyBox;
+	var engine;
 
 	// Массивы объектов
 	var objects = [];
@@ -71,7 +72,7 @@ var Surface = function()
 	var mapHeight = 200;
 	
 	// Свет
-	var dirLight, spotLight;
+	var dirLight, spotLight, ambientLight, sunLight;
 	
 	// Идентификатор процесса рендеринга
 	var id;
@@ -80,6 +81,7 @@ var Surface = function()
 	var levelTime = 0;
 	
 	var floor;
+	var modelsLoader;
 	
 	this.setPrioritet = function(serArg)
 	{
@@ -123,34 +125,50 @@ var Surface = function()
 	    var z = window.innerHeight/window.innerWidth;
 	};
 
+	var lightPosY = -0.10;
 	// Здесь задается весь свет на карте
 	var lightInit = function()
 	{
-		spotLight = new THREE.SpotLight(0xFFDEAD, 0.8);
-		spotLight.position.set(-1.7, 1.5, 5);
-		spotLight.target.position.set(1, -0.3, -3);	
+		spotLight = new THREE.SpotLight(0xCD6600, 2.5); //#CD6600 F4A460
+		spotLight.position.set(0.0, -0.25, 0);
+		spotLight.target.position.set(0, -0.5, 0);	
 		
 		spotLight.shadowCameraNear = 0.1;
-		spotLight.shadowCameraFar = 7;
+		spotLight.shadowCameraFar = 15;
 		
 		spotLight.shadowMapBias = 0.003885;
-		spotLight.shadowMapWidth = 1024;
-		spotLight.shadowMapHeight = 1024;
+		spotLight.shadowMapWidth = 512;
+		spotLight.shadowMapHeight = 512;
 		
-		spotLight.castShadow = true;
-		// объекты должны отбрасывать тень
-		spotLight.shadowDarkness = 0.5;
+		spotLight.castShadow = false;
+		spotLight.shadowDarkness = 0.0;
+
+		sunLight = new THREE.SpotLight(0x000000, 1.0); //#CD6600 F4A460
+		sunLight.position.set(0.0, 3, -3);
+		sunLight.target.position.set(0, 0, 0);	
+		
+		sunLight.shadowCameraNear = 0.1;
+		sunLight.shadowCameraFar = 15;
+		
+		sunLight.shadowMapBias = 0.003885;
+		sunLight.shadowMapWidth = 512;
+		sunLight.shadowMapHeight = 512;
+		
+		sunLight.castShadow = true;
+		sunLight.shadowDarkness = 0.4;
 		//spotLight.shadowCameraVisible = true;		
 		
 		dirLight = new THREE.DirectionalLight(0xFAFAD2, 0.9);
-		dirLight.position.set(1.7, 4.5, -5);
-		dirLight.target.position.set(1, 0, -1);			
+		dirLight.position.set(0, 4.5, -5);
+		dirLight.target.position.set(1, 0, -1);		
+
+        ambientLight = new THREE.AmbientLight(0x666666);	
 	}
 
 	// Создает человечка заданного типа
-	var spawnHuman = function(humanType, object, side)
+	var spawnHuman = function(humanType, object, side, loader)
 	{
-		var human = new Human(humanType);
+		var human = new Human(humanType, loader);
 		humans.push(human);
 
 		if(humanType == HumanTypes.Soldier)
@@ -214,7 +232,7 @@ var Surface = function()
 	// Создает огонь
 	var spawnFire = function(numbFire)
 	{
-		var fire = new Fire(0);
+		var fire = new Fire(0, modelsLoader);
 		fires.push(fire);
 		fire.getMesh().position.x = (getRandomInt(10, 40)  + 100) / 100.0;
 		fire.getMesh().position.z = (- 100 + numbFire * (300.0/(count_fire - 10) - 5)) / 100.0;
@@ -228,7 +246,7 @@ var Surface = function()
 	
 	var spawnFireSpace = function(numbFire)
 	{
-		var fire = new Fire(getRandomInt(0, 1) + 1);
+		var fire = new Fire(getRandomInt(0, 1) + 1, modelsLoader);
 		fires.push(fire);
 		fire.getMesh().position.x = (- 100 + getRandomInt(0, 200)) / 100.0;
 		fire.getMesh().position.z = (- 100 + getRandomInt(0, 200)) / 100.0;
@@ -241,10 +259,10 @@ var Surface = function()
 	
 	var endFireSpace = function()
 	{
-		var fire = new Fire(getRandomInt(0, 1) + 1);
+		var fire = new Fire(getRandomInt(0, 1) + 1, modelsLoader);
 		fires.push(fire);
 		fire.getMesh().position.x = (- 170 + getRandomInt(0, 340)) / 100.0;
-		fire.getMesh().position.z = (- 170 + getRandomInt(0, 340)) / 100.0;
+		fire.getMesh().position.z = (- 170 + getRandomInt(0, 290)) / 100.0;
 		fire.getMesh().position.y = -0.05;
 		
 		fire.getMesh().rotation.y =  -3.14 / 2;
@@ -254,6 +272,7 @@ var Surface = function()
 	// Тут вся инициализация
 	var init = function(loader)
 	{
+		modelsLoader = loader;
 		scene = new THREE.Scene(); 
 		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.0001, 7);
 		renderer = new THREE.WebGLRenderer({'antialias':true});  
@@ -284,10 +303,11 @@ var Surface = function()
 
 		lightInit();
 		
-		scene.add(spotLight);
 		scene.add(dirLight);
+		scene.add(ambientLight);
+		scene.add(sunLight);
 		
-	    skyBox = new SkyBox('skybox/');
+	    skyBox = new SkyBox(loader);
 		scene.add(skyBox.getMesh());
 		
 		floor = new Terrain(scene, loader);
@@ -313,7 +333,6 @@ var Surface = function()
 	var render = function() 
 	{
 		id = requestAnimationFrame(render);		
-		
 		var delta = clock.getDelta() * 1000.0;
 		if(delta > 200) delta = 200;
 
@@ -326,8 +345,8 @@ var Surface = function()
 			// Обрабатываем движение главного героя
 			controls.update(delta);	
 			controls.collision(objects);
-			if((controls.getLevel() == 1 && controls.getObject().position.z > 0.7) || 
-			   (controls.getLevel() == 2 && (controls.getObject().position.z > 0.7 || controls.getObject().position.z < -0.9 ||
+			if((controls.getLevel() == 1 && controls.getObject().position.z > 0.9) || 
+			   (controls.getLevel() == 2 && (controls.getObject().position.z > 0.9 || controls.getObject().position.z < -0.9 ||
 											 controls.getObject().position.x > 0.9 || controls.getObject().position.x < -0.9)))
 			{
 				humanDislocation = Dislocations.Terrain;
@@ -337,7 +356,7 @@ var Surface = function()
 					{
 						for(var i = 0; i < maxFlyingHumans / 2 && flyingHumansCount <= maxFlyingHumans; i++)
 						{
-							spawnHuman(HumanTypes.Flyer, controls.getObject(), 1);
+							spawnHuman(HumanTypes.Flyer, controls.getObject(), 1, modelsLoader);
 							flyingHumansCount++;
 						}
 					}
@@ -346,7 +365,7 @@ var Surface = function()
 					{
 						for(var i = 0; i < maxFlyingHumans / 2 && flyingHumansCount <= maxFlyingHumans; i++)
 						{
-							spawnHuman(HumanTypes.Flyer, controls.getObject(), 0);
+							spawnHuman(HumanTypes.Flyer, controls.getObject(), 0, modelsLoader);
 							flyingHumansCount++;
 						}
 					}
@@ -413,21 +432,21 @@ var Surface = function()
 
 				if(humanSpawnTime0 > 2000)
 				{
-					if(humans.length <= maxHumans) spawnHuman(HumanTypes.Soldier, controls.getObject(), 0);
+					if(humans.length <= maxHumans) spawnHuman(HumanTypes.Soldier, controls.getObject(), 0, modelsLoader);
 					humanSpawnTime0 = 0;
 				}
 				humanSpawnTime0 += Math.pow((3 - controls.getDistFromSide(0)), 3) * delta * 0.1;
 
 				if(humanSpawnTime1 > 2000)
 				{
-					if(humans.length <= maxHumans) spawnHuman(HumanTypes.Soldier, controls.getObject(), 1);
+					if(humans.length <= maxHumans) spawnHuman(HumanTypes.Soldier, controls.getObject(), 1, modelsLoader);
 					humanSpawnTime1 = 0;
 				}
 				humanSpawnTime1 += Math.pow((3 - controls.getDistFromSide(1)), 3) * delta * 0.1;
 
 				if(humanSpawnTime2 > 2000)
 				{
-					if(humans.length <= maxHumans) spawnHuman(HumanTypes.Soldier, controls.getObject(), 2);
+					if(humans.length <= maxHumans) spawnHuman(HumanTypes.Soldier, controls.getObject(), 2, modelsLoader);
 					humanSpawnTime2 = 0;
 				}
 				humanSpawnTime2 += Math.pow((3 - controls.getDistFromSide(2)), 3) * delta * 0.1;
@@ -466,6 +485,10 @@ var Surface = function()
 			{	
 				if(prioritet > 0)
 				{
+					spotLight.position.set(controls.getObject().position.x, lightPosY, controls.getObject().position.z);
+					spotLight.target.position.set(controls.getObject().position.x, -0.5, controls.getObject().position.z);
+					if(lightPosY < 2.5) lightPosY += 0.001; //2.5
+					else gameOver(state_titan[controls.getLevel()], controls.getEXPpart(), controls.getHPpart(), controls.getRung());
 					if(!addTitanFire)
 					{
 						// пошла анимация заставки
@@ -480,9 +503,10 @@ var Surface = function()
 						$('#stateP').css('display', 'none');
 						
 						scene.remove(mapCamera);
+						scene.add(spotLight);
 				
 						addTitanFire = true;
-						TitanFire = new titanFire();
+						TitanFire = new titanFire(modelsLoader);
 						scene.add(TitanFire.getMesh());
 						TitanFire.getMesh().position.x = controls.getObject().position.x;
 						TitanFire.getMesh().position.z = controls.getObject().position.z;
@@ -500,7 +524,14 @@ var Surface = function()
 						fireFly = false;
 						
 						floor.deleteForest(scene);
+						
+						engine = new ParticleEngine();
+						engine.setValues( Examples.smoke );
+						engine.initialize(scene);
 					}
+
+					skyBox.update(TitanFire.getMesh().position);
+					
 					
 					for(var j = 0; j < humans.length; j++)
 					{
@@ -529,13 +560,13 @@ var Surface = function()
 					}
 					else countAddtitle ++;
 					
-					
 					if(titleAdd)
 					{
 						titleEnd.update(delta);
 					}
 					
 					TitanFire.update(delta, scene);
+					engine.update( delta / 1000 );
 					var w = window.innerWidth, h = window.innerHeight;
 					
 					camera.position.x += 0.008 * Math.cos(anl);
@@ -594,6 +625,7 @@ function pointerLockChange()
 		{
 			$('.leaning').eq(index).css('display', 'block');
 			$('#bouble').css('display', 'block');
+			$('.errorMgsFull').eq(0).css('display', 'none');
 		}
 	} 
 	else 
@@ -639,13 +671,60 @@ function gameOver(level_over, oput_over, hp, sp)
 	
 	game_over_flag = 1;
 
-	var s = "";
-	s += level_over  + "<br/>";
-	s += "Опыт: " + oput_over + "<br/>";
-	s += "Остатки жизни: " + hp + "<br/>";
-	s += "Звания: <br/>" + sp;
+	var g = "";
+	var s = "<div style = \"background-color: #FFFFFF; width: 350px; height: \"";
+	var gs = "";
+	if(sp.length == 0)
+	{
+		s += "190px\">";
+		
+		s += "<table CELLPADDING = 5 > <tr><td align =  \"center\"> Титан-тамагочи! </td>";
+		g += "<table CELLPADDING = 5 style = \"width: 98%;\">";
+		
+		g += "<tr><td style = \"padding-left: 40px;\">" + level_over  + "</td></tr>";
+		g += "<tr><td style = \"padding-left: 40px;\">Опыт: " + oput_over + "</td></tr>";
+		g += "<tr><td align = \"center\"><b style = \"font-size: 18px;\">Звания</b></td></tr>"; 
+		
+		g += "<tr><td align = \"center\">Увы, ваша игра не смогла ничем выделиться.</td></tr>";
+		
+		s += "<tr><td>" + level_over  + "</td></tr>";
+		s += "<tr><td>Опыт: " + oput_over + "</td></tr>";
+		s += "<tr><td align = \"center\"><b>Звания</b></td></tr>";
+		s += "<tr><td>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspУвы, ваша игра не смогла ничем выделиться.</td></tr>"; //
+	}
+	else
+	{
+		var len = 220;
+		for(var i = 1 ; i < countSp; i++) len += 35; 
+		
+		s += len.toString() + "px\">";
+		
+		s += "<table CELLPADDING = 5> <tr><td align =  \"center\"> Титан-тамагочи! </td>";
+		g += "<table CELLPADDING = 5 style = \"width: 98%;\">";
+	
+		g += "<tr><td style = \"padding-left: 40px;\">" + level_over  + "</td></tr>";
+		g += "<tr><td style = \"padding-left: 40px;\">Опыт: " + oput_over + "</td></tr>";
+		g += "<tr><td align = \"center\"><b style = \"font-size: 18px;\">Звания</b></td></tr>"; 
+		
+		s += "<tr><td>" + level_over  + "</td></tr>";
+		s += "<tr><td>Опыт: " + oput_over + "</td></tr>";
+		s += "<tr><td align = \"center\"><b>Звания</b></td></tr>";
+		
+		gs = "";
+		
+		for(var i = 0 ; i < countSp; i++) s += "<tr><td>" + sp[i] + "</td></tr>";
+		for(var i = 0 ; i < countSp; i++) g += "<tr><td style = \"padding-left: 40px;\">" + sp[i] + "</td></tr>";
+
+		g += gs;
+		s += gs;
+	}
+	
+	g += "</table></div>";
+	$('#textOver').html(g);
+	
+	s += "<tr><td align =  \"center\"><a href = \"\"> Играть </a></td></tr>";
+	s += "</table></div>";
 	$('#relis').text(s);
-	$('#text_over_reil').html(s);
 }
 
 document.addEventListener('pointerlockchange', pointerLockChange, false);
@@ -683,6 +762,8 @@ function restart()
 	
 	surface.stop_render();
 	
+	$('.errorMgsFull').eq(0).css('display', 'none');
+	$('.models-loading').eq(0).css('display', '');
 	surface = new Surface();
 	loader  = new ModelsLoader(surface, false);
 
@@ -708,11 +789,13 @@ $(document).ready(function()
 		return;
 	}
 
+	$('.errorMgsFull').eq(0).css('display', 'none');
+	$('.models-loading').eq(0).css('display', 'block');
 	surface = new Surface();
 	loader = new ModelsLoader(surface, true);
 	
 	sound = new Sound(['audio/1.ogg']);
-	sound.play();
+	//sound.play();
 
 	soundEnd = new Sound(['audio/end.ogg']);
 	

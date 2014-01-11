@@ -36,6 +36,7 @@ THREE.FirstPersonControls = function(camera, borders)
 	var side = 0;							// сколько раз натыкался на дома и лес
 	var skill = false;						// если использовал скил, то момо этого звания
 	var gun = 0;							// процент пойманых снарядов от пушки
+	var fullGun = 0;						// всего выпущено зарядов
 	
 	//---------------------------------max---------------------------------------------------
 	var maxdistance = 100;					// сколько всего пробежал
@@ -52,7 +53,7 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	
 	// ступени опыта
-	var state_opt_level = new Array(1, 1, 1);
+	var state_opt_level = new Array(10, 10, 10);
 	var level = 0;
 
 	// Указатель на себя
@@ -585,6 +586,16 @@ THREE.FirstPersonControls = function(camera, borders)
 		return exp;
 	};
 	
+	this.setGun = function()
+	{
+		gun ++;
+	};
+	
+	this.setFullGun = function()
+	{
+		fullGun ++;
+	};
+	
 	this.encreaseEXP = function(delta, timeLevel)
 	{
 		exp += delta;
@@ -592,25 +603,33 @@ THREE.FirstPersonControls = function(camera, borders)
 		else FullBloodSprite = 250;
 		if(exp >= state_opt_level[level])
 		{
-			exp = 0;
 			level ++;
-			if(level == 1)
+			if(level < 3)
 			{
-				bestTime = timeLevel;
-				typeSkill = getRandomInt(0, 1);
-				if(typeSkill == 0) $('#textSkill').text('Драп');
-				else $('#textSkill').text('Броня');
+				exp = 0;
 				
-				$('#skillMight').css('display', 'block');
+				if(level == 1)
+				{
+					bestTime = timeLevel;
+					typeSkill = getRandomInt(0, 1);
+					if(typeSkill == 0) $('#textSkill').text('Драп');
+					else $('#textSkill').text('Броня');
+					
+					$('#skillMight').css('display', 'block');
+				}
+				if(level == 2)
+				{
+					typeSkillEnd = getRandomInt(0, 1);
+					if(typeSkillEnd == 0) $('#textSkillPush').text('Ударная волна');
+					else $('#textSkillPush').text('Прыжок смерти');
+					$('#skillPush').css('display', 'block');
+				}
 			}
-			if(level == 2)
+			else
 			{
-				typeSkillEnd = getRandomInt(0, 1);
-				if(typeSkillEnd == 0) $('#textSkillPush').text('Ударная волна');
-				else $('#textSkillPush').text('Прыжок смерти');
-				$('#skillPush').css('display', 'block');
+				theEnd = true;
+				level = 2;
 			}
-			if(level == 3) theEnd = true;
 		}
 	};
 	
@@ -644,28 +663,31 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	this.getRung = function()
 	{
-		var s = "";
+		var s = [];
 		var loh = 0;
 		var neloh = 0;
 		
-		if(distance <= maxdistance && level != 0){ s += rungArray[0]; loh ++; }
-		if(hit >= maxhit) s += rungArray[1];
-		if(jump >= maxjump) s += rungArray[2];
-		if(running >= maxrunning) s += rungArray[3];
-		if(damage >= maxdamage){ s += rungArray[4]; neloh ++; }
+		if(distance <= maxdistance && level != 0){ s.push(rungArray[0]); loh ++; }
+		if(hit >= maxhit) s.push(rungArray[1]);
+		if(jump >= maxjump) s.push(rungArray[2]);
+		if(running >= maxrunning) s.push(rungArray[3]);
+		if(damage >= maxdamage){ s.push(rungArray[4]); neloh ++; }
 		
-		if(bloomer >= maxbloomer){ s += rungArray[5]; loh ++; }
-		if(fire) s += rungArray[6];
-		if(killer >= maxkiller){ s += rungArray[7]; neloh ++; }
-		if(bestTime <= maxbestTime && level != 0){ s += rungArray[8]; neloh ++; }
-		if(side >= maxside){ s += rungArray[9]; loh ++; }
+		if(bloomer >= maxbloomer){ s.push(rungArray[5]); loh ++; }
+		if(fire) s.push(rungArray[6]);
+		if(killer >= maxkiller){ s.push(rungArray[7]); neloh ++; }
+		if(bestTime <= maxbestTime && level != 0){ s.push(rungArray[8]); neloh ++; }
+		if(side >= maxside){ s.push(rungArray[9]); loh ++; }
 		
-		if(!skill && level != 0) s += rungArray[10];
+		if(!skill && level != 0) s.push(rungArray[10]);
 		
-		if(loh >= 3) s += rungArray[11];
-		if(neloh >= 3) s += rungArray[12];
+		if(loh >= 3) s.push(rungArray[11]);
+		if(neloh >= 3) s.push(rungArray[12]);
 		
 		// остались ловкий и минер
+		if((gun / fullGun) * 100 < 10 && level == 2) s.push(rungArray[13]);
+		if((gun / fullGun) * 100 > 70 && level > 0) s.push(rungArray[14]);
+		
 		return s;
 	};
 
