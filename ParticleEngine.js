@@ -227,14 +227,14 @@ function ParticleEngine()
 		},
 		vertexShader:   particleVertexShader,
 		fragmentShader: particleFragmentShader,
-		transparent: true, alphaTest: 0.5, depthTest: false,  // if having transparency issues, try including: alphaTest: 0.5, 
-		//blending: THREE.NormalBlending, depthTest: false,
+		transparent: true, //alphaTest: 0.5,  // if having transparency issues, try including: alphaTest: 0.5, 
+		blending: THREE.NormalBlending, depthTest: true,
 		
 	});
 	this.particleMesh = new THREE.Mesh();
 }
 	
-ParticleEngine.prototype.setValues = function( parameters )
+ParticleEngine.prototype.setValues = function( parameters, vect )
 {
 	if ( parameters === undefined ) return;
 	
@@ -245,6 +245,9 @@ ParticleEngine.prototype.setValues = function( parameters )
 	
 	for ( var key in parameters ) 
 		this[ key ] = parameters[ key ];
+
+	this.positionBase.x += vect.x;
+	this.positionBase.z += vect.z;
 	
 	// attach tweens to particles
 	Particle.prototype.sizeTween    = this.sizeTween;
@@ -274,8 +277,8 @@ ParticleEngine.prototype.setValues = function( parameters )
 		},
 		vertexShader:   particleVertexShader,
 		fragmentShader: particleFragmentShader,
-		transparent: true,  alphaTest: 0.5, // if having transparency issues, try including: alphaTest: 0.5, 
-		blending: THREE.NormalBlending, depthTest: true
+		transparent: true,  //alphaTest: 0.5, // if having transparency issues, try including: alphaTest: 0.5, 
+		blending: THREE.NormalBlending//, depthTest: false
 	});
 	this.particleMesh = new THREE.ParticleSystem();
 }
@@ -366,8 +369,6 @@ ParticleEngine.prototype.update = function(dt)
 {
 	var recycleIndices = [];
 	
-	console.log(this.emitterDeathAge);
-	
 	// update particle data
 	for (var i = 0; i < this.particleCount; i++)
 	{
@@ -418,11 +419,11 @@ ParticleEngine.prototype.update = function(dt)
 
 	// stop emitter?
 	this.emitterAge += dt;
-	if ( this.emitterAge > this.emitterDeathAge )  this.emitterAlive = false;
+	//if ( this.emitterAge > this.emitterDeathAge )  this.emitterAlive = false;
 }
 
-ParticleEngine.prototype.destroy = function()
+ParticleEngine.prototype.destroy = function(scene_cop)
 {
-    scene.remove( this.particleMesh );
+    scene_cop.remove( this.particleMesh );
 }
 ///////////////////////////////////////////////////////////////////////////////

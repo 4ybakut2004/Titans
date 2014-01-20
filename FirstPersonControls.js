@@ -21,14 +21,14 @@ var rungArray = new Array
 "Титан-собери все патроны – лишил бойцов боеприпасов, героически собрав их своим телом.<br/>"
 );
 
-THREE.FirstPersonControls = function(camera, borders) 
+THREE.FirstPersonControls = function(camera, borders, minS) 
 {
 	//--------------------------------------начало званий--------------------------------------
 	var distance = 0;						// сколько всего пробежал
 	var hit = 0;							// сколько получил всего ударов /
 	var jump = 0;							// сколько всего раз прыгнул	/
 	var running = 0;						// сколько раз задействовал бег /
-	var damage = 0;						// сколько всего нанесли уровна	/
+	var damage = 0;							// сколько всего нанесли уровна	/
 	var bloomer = 0;						// сколько хлопал руками просто так /
 	var fire = false;						// помер от огня
 	var killer = 0;							// сколько раз уложил толпу		/
@@ -40,20 +40,20 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	//---------------------------------max---------------------------------------------------
 	var maxdistance = 100;					// сколько всего пробежал
-	var maxhit = 1000;						// сколько получил всего ударов 
+	var maxhit = 5000;						// сколько получил всего ударов 
 	var maxjump = 200;						// сколько всего раз прыгнул	
-	var maxrunning = 200;					// сколько раз задействовал бег 
-	var maxdamage = 5000;					// сколько всего нанесли уровна	
-	var maxbloomer = 500;					// сколько хлопал руками просто так 
-	var maxkiller = 20;						// сколько раз уложил толпу		
+	var maxrunning = 150;					// сколько раз задействовал бег 
+	var maxdamage = 1000;					// сколько всего нанесли уровна	
+	var maxbloomer = 200;					// сколько хлопал руками просто так 
+	var maxkiller = 10;						// сколько раз уложил толпу		
 	var maxbestTime = 10000;				// время прохода уровня 1
-	var maxside = 50;						// сколько раз натыкался на дома и лес
+	var maxside = 3000;						// сколько раз натыкался на дома и лес
 	var maxgun = 30;						// процент пойманых снарядов от пушки
 	//--------------------------------------конец званий--------------------------------------
 	
 	
 	// ступени опыта
-	var state_opt_level = new Array(10, 10, 10);
+	var state_opt_level = new Array(30, 60, 120); // 30 60 120
 	var level = 0;
 
 	// Указатель на себя
@@ -124,6 +124,7 @@ THREE.FirstPersonControls = function(camera, borders)
 	
 	var bloodSprite;				// хочу крови!!
 	var FullBloodSprite = 250;		// полная полоска жажды
+	var constBlood = 0.05;				// константа жажды
 	
 	var theEnd = false;
 	
@@ -166,7 +167,7 @@ THREE.FirstPersonControls = function(camera, borders)
 		mini_titan.rotation.x = - 3.14 / 2;
 		mini_titan.position.y = 0.5;
 		
-		yawObject.add(mini_titan);
+		minS.add(mini_titan);
 		
 		l_blood = createHand('textures/humans/l_blood.png', -1000, window.innerHeight, THREE.SpriteAlignment.bottomLeft);		
 		pitchObject.add(l_blood);
@@ -200,6 +201,7 @@ THREE.FirstPersonControls = function(camera, borders)
 			var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
 			yawObject.rotation.y -= movementX * mouseSensitivity;
+			mini_titan.rotation.z = yawObject.rotation.y;
 			pitchObject.rotation.x -= movementY * mouseSensitivity;
 
 			pitchObject.rotation.x = Math.max(-PI_2, Math.min(PI_2, pitchObject.rotation.x));
@@ -313,7 +315,6 @@ THREE.FirstPersonControls = function(camera, borders)
 				
 			case 16: // shift
 				isRunning = false;
-				running ++;
 				break;
 		}
 	};
@@ -408,9 +409,9 @@ THREE.FirstPersonControls = function(camera, borders)
 		delta *= 0.1;
 		if(exp > 0)
 		{		
-			FullBloodSprite -= 0.5;
+			FullBloodSprite -= constBlood * delta;
 			if(FullBloodSprite < 0) FullBloodSprite = 0;
-			if(FullBloodSprite <= 50) hp -= 0.5;
+			if(FullBloodSprite <= 125) hp -= 0.07 * delta;
 		}
 		bloodSprite.scale.set(FullBloodSprite, 50, 1.0);
 		bloodSprite.position.set( window.innerWidth / 2 - FullBloodSprite, window.innerHeight + 25, 0 );
@@ -445,7 +446,7 @@ THREE.FirstPersonControls = function(camera, borders)
 		if(isRunning && (usedEnergy < energy))
 		{
 			speed = runSpeed;
-			usedEnergy += 5 * delta;
+			usedEnergy += 3 * delta;
 		}
 
 		// Постоянно уменьшаем скорость, чтобы останавливаться
@@ -481,7 +482,15 @@ THREE.FirstPersonControls = function(camera, borders)
 		yawObject.translateY(velocity.y); 
 		yawObject.translateZ(velocity.z);
 		
-		distance += delta * Math.pow(velocity.x*velocity.x + velocity.z*velocity.z, 0.5);
+		mini_titan.position.x = yawObject.position.x;
+		mini_titan.position.z = yawObject.position.z;
+		
+		var distDelta = delta * Math.pow(velocity.x*velocity.x + velocity.z*velocity.z, 0.5);
+		distance += distDelta;
+		if(isRunning)
+		{
+			running += distDelta;
+		}
 		
 		if(skillPush)
 		{		
@@ -498,7 +507,7 @@ THREE.FirstPersonControls = function(camera, borders)
 		// скилл брони включен
 		if(skillMight) 
 		{ 
-			skillMightCount += delta * 0.4;
+			skillMightCount += delta * 0.2;
 			$('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #2E8B57 0%, #2E8B57 ' + (100 * (50 - skillMightCount) / 50) + '%, #9AFF9A 0%, #9AFF9A 100%');
 			if(skillMightCount > 50) 
 			{
@@ -551,13 +560,14 @@ THREE.FirstPersonControls = function(camera, borders)
 		return hp;
 	};
 	
-	this.decreaseHP = function(delta)
+	this.decreaseHP = function(_damage, delta)
 	{
 		if(!skillMight)
 		{
 			hit ++;
-			damage += delta;
-			hp -= delta;
+			var dam = _damage * 0.01 * delta;
+			damage += dam;
+			hp -= dam;
 			if(hp < 0) hp = 0;
 			
 			l_blood.material.opacity = Math.pow(1 - hp / maxhp, 0.25);
@@ -596,10 +606,10 @@ THREE.FirstPersonControls = function(camera, borders)
 		fullGun ++;
 	};
 	
-	this.encreaseEXP = function(delta, timeLevel)
+	this.encreaseEXP = function(delta, newExp, timeLevel)
 	{
-		exp += delta;
-		if(FullBloodSprite + 2 <= 250) FullBloodSprite += 2;
+		exp += newExp;
+		if(FullBloodSprite + 0.5 * delta <= 250) FullBloodSprite += 0.5 * delta;
 		else FullBloodSprite = 250;
 		if(exp >= state_opt_level[level])
 		{
@@ -623,6 +633,7 @@ THREE.FirstPersonControls = function(camera, borders)
 					if(typeSkillEnd == 0) $('#textSkillPush').text('Ударная волна');
 					else $('#textSkillPush').text('Прыжок смерти');
 					$('#skillPush').css('display', 'block');
+					constBlood = 0.01;
 				}
 			}
 			else
@@ -676,7 +687,7 @@ THREE.FirstPersonControls = function(camera, borders)
 		if(bloomer >= maxbloomer){ s.push(rungArray[5]); loh ++; }
 		if(fire) s.push(rungArray[6]);
 		if(killer >= maxkiller){ s.push(rungArray[7]); neloh ++; }
-		if(bestTime <= maxbestTime && level != 0){ s.push(rungArray[8]); neloh ++; }
+		//if(bestTime <= maxbestTime && level != 0){ s.push(rungArray[8]); neloh ++; }
 		if(side >= maxside){ s.push(rungArray[9]); loh ++; }
 		
 		if(!skill && level != 0) s.push(rungArray[10]);
@@ -686,7 +697,7 @@ THREE.FirstPersonControls = function(camera, borders)
 		
 		// остались ловкий и минер
 		if((gun / fullGun) * 100 < 10 && level == 2) s.push(rungArray[13]);
-		if((gun / fullGun) * 100 > 70 && level > 0) s.push(rungArray[14]);
+		if((gun / fullGun) * 100 > 60 && level > 0) s.push(rungArray[14]);
 		
 		return s;
 	};

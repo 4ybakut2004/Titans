@@ -1,6 +1,6 @@
 function ModelsLoader(surface, first)
 {
-	var modelsCount       = 22;
+	var modelsCount       = 21;
 	var housesCount       = 0;
 	var cannonsCount      = 0;
 	var loadedModelsCount = 0;
@@ -10,16 +10,20 @@ function ModelsLoader(surface, first)
 	this.trees            = [];
 	this.skybox           = {};
 	this.floor            = {};
-	this.fireTitan        = {};
+	this.fireTitan        = [];
 	this.fire        	  = {};
 	this.trees            = {};
-	this.treemodels       = {};
+	this.treemodels       = [];
+	this.grass			  = {};
 	var scope             = this;
 
 	var paths = 
 	[
 		{'path': './models/houses/4/models/model.dae',        'type': 'house'},
-		{'path': './models/trees/1/tree-obj.js',              'type': 'treemodels'},
+		{'path': './models/trees/1/tree1.js',                 'type': 'treemodels'},
+		{'path': './models/trees/1/tree2.js',                 'type': 'treemodels'},
+		{'path': './models/trees/1/tree3.js',                 'type': 'treemodels'},
+		{'path': './models/trees/1/tree4.js',                 'type': 'treemodels'},
 		{'path': './models/cannons/1/models/32lb Cannon.dae', 'type': 'cannon'},
 		{'path': './textures/humans/human_2.png',             'type': 'humans'},
 		{'path': './textures/humans/human_1.png',             'type': 'humans'},
@@ -32,14 +36,10 @@ function ModelsLoader(surface, first)
 		{'path': './skybox/grimmnight_bk.jpg',                'type': 'skybox'},
 		{'path': './skybox/grimmnight_ft.jpg',                'type': 'skybox'},
 		{'path': './textures/grass.jpg',                      'type': 'floor'},
-		{'path': './textures/humans/fireTitan.png',           'type': 'fireTitan'},
-		{'path': './textures/humans/fireTitan3.png',          'type': 'fireTitan'},
-		{'path': './textures/fire.png',                       'type': 'fire'},
-		{'path': './textures/fire2.png',                      'type': 'fire'},
-		{'path': './textures/fire3.png',                      'type': 'fire'},
-		{'path': './textures/tree.png',                       'type': 'trees'},
-		{'path': './textures/tree_small.png',                 'type': 'trees'},
-		{'path': './textures/forest.png',                     'type': 'trees'}
+		{'path': './models/fireTitan/witch.js',           	  'type': 'fireTitan'},
+		{'path': './textures/forest.png',                     'type': 'trees'},
+		{'path': './textures/candle.png',                     'type': 'fire'},
+		{'path': './textures/miniGrass.png',                  'type': 'grass'}
 	];
 
 	var load = function(path)
@@ -101,9 +101,9 @@ function ModelsLoader(surface, first)
 			case 'skybox':
 			case 'humans':
 			case 'floor':
-			case 'fireTitan':
-			case 'fire':
 			case 'trees':
+			case 'fire':
+			case 'grass':
 				scope[path.type][path.path] = THREE.ImageUtils.loadTexture(path.path, undefined, function(){
 					loadedModelsCount++;
 					$('.models-loading').eq(0).css('background', 'linear-gradient(90deg, #B0C4DE 0%, #B0C4DE ' + (100 * loadedModelsCount / modelsCount) + '%, #ffffff 0%, #ffffff 100%)');
@@ -128,11 +128,39 @@ function ModelsLoader(surface, first)
    					for(var i = 0; i < materials.length; i++)
    					{
    						materials[i].alphaTest = 0.5;
+   						materials[i].side = THREE.DoubleSide;
    					}
-		            scope.treemodels[path.path] = new THREE.Mesh(geometry, material);
-		            scope.treemodels[path.path].scale.set( 0.015, 0.015, 0.015 );
-		            scope.treemodels[path.path].castShadow = true;
-		            console.log(scope.treemodels[path.path].children.length);
+   					var treeModel = new THREE.Mesh(geometry, material);
+		            treeModel.scale.set( 0.012, 0.012, 0.012 );
+		            treeModel.castShadow = true;
+		            scope.treemodels.push(treeModel);
+		            loadedModelsCount++;
+					$('.models-loading').eq(0).css('background', 'linear-gradient(90deg, #B0C4DE 0%, #B0C4DE ' + (100 * loadedModelsCount / modelsCount) + '%, #ffffff 0%, #ffffff 100%)');
+					if(loadedModelsCount < modelsCount)
+					{
+						load(paths[loadedModelsCount]);
+					}
+					else
+					{	
+						surface.start(scope);
+						$('.errorMgsFull').eq(0).css('display', '');
+						$('.models-loading').eq(0).css('display', 'none');
+						if(first) $('#myModal').modal('show');
+					}
+		        });
+				break;
+			case 'fireTitan':
+				var loader = new THREE.JSONLoader( true );
+   				loader.load( path.path, function( geometry, materials ) {
+   					var material = new THREE.MeshFaceMaterial(materials);
+   					for(var i = 0; i < materials.length; i++)
+   					{
+   						materials[i].alphaTest = 0.5;
+   					}
+   					var titanModel = new THREE.Mesh(geometry, material);
+		            titanModel.scale.set( 0.035, 0.035, 0.035 );
+		            titanModel.castShadow = true;
+		            scope.fireTitan.push(titanModel);
 		            loadedModelsCount++;
 					$('.models-loading').eq(0).css('background', 'linear-gradient(90deg, #B0C4DE 0%, #B0C4DE ' + (100 * loadedModelsCount / modelsCount) + '%, #ffffff 0%, #ffffff 100%)');
 					if(loadedModelsCount < modelsCount)

@@ -26,6 +26,7 @@ var state_titan = new Array ("Сутпень развития: Безмозгл�
  
 var level_up = 0;
 var game_over_flag = 0;
+var firstError = false;
 var Surface = function()
 {
 	// Все кординаты загоняются в один предел. Делятся на значение переменной max.
@@ -36,17 +37,15 @@ var Surface = function()
 	// Переменная, отвечающая за то, открыто меню, или нет
 	var prioritet = 0;
 
-	var scene, camera, mapCamera, renderer, controls, time;
+	var scene, camera, minScene, mapCamera, renderer, controls, time, fireScene;
 	var clock = new THREE.Clock();
 	var humanSpawnTime0 = 0;
 	var humanSpawnTime1 = 0;
 	var humanSpawnTime2 = 0;
-	var maxHumans       = 15;
+	var maxHumans       = 10;
 	var maxFlyingHumans = 5;
 	var flyingHumansCount = 0;
-	var disChangeLine   = 20;
-	
-	var endFire = 150;
+	var disChangeLine   = 25;
 	
 	var humanDislocation = Dislocations.Terrain;
 
@@ -64,8 +63,7 @@ var Surface = function()
 	var titleEnd;
 	var titleAdd = false;
 	var countAddtitle = 0;
-	var count_humans = 1;
-	var count_fire = 20;
+	var count_fire = 10;
 	
 	// Размеры мини-карты
 	var mapWidth = 200;
@@ -82,6 +80,11 @@ var Surface = function()
 	
 	var floor;
 	var modelsLoader;
+
+	var endFirePositions = [];
+	var endFireCount = 30;
+	var humanSpeed = 1.0;
+	var humanPower = 1.0;
 	
 	this.setPrioritet = function(serArg)
 	{
@@ -112,8 +115,6 @@ var Surface = function()
 	{
 		controls.onKeyDown(event, humans);
 	};
-	
-	
 
 	var onWindowResize = function() 
 	{
@@ -211,7 +212,7 @@ var Surface = function()
 
 		if(humanType == 1)
 		{
-			human.getMesh(1).position.y = 0.05;
+			human.getMesh(1).position.y = 0.045;
 			
 			human.getMesh(3).position.y = human.getMesh(1).position.y + 0.015;
 			human.getMesh(3).position.x = human.getMesh(1).position.x;
@@ -226,66 +227,115 @@ var Surface = function()
 		human.getMesh(0).position.y = 0.4;
 		
 		scene.add(human.getMesh(1));
-		scene.add(human.getMesh(0));
+		minScene.add(human.getMesh(0));
 	};
-	
+
+	function candle()
+	{
+		var can = 
+		{
+			positionStyle  : Type.SPHERE,
+			positionBase   : new THREE.Vector3( 0, -0.06, 0 ),
+			positionRadius : 0.05,
+			
+			velocityStyle  : Type.CUBE,
+			velocityBase   : new THREE.Vector3(0,0.4,0),
+			velocitySpread : new THREE.Vector3(0.01,0,0.01),
+			
+			particleTexture : modelsLoader.fire['./textures/candle.png'].clone(), //THREE.ImageUtils.loadTexture( 'textures/candle.png' ),
+			
+			sizeTween    : new Tween( [0, 0.06, 0.5], [0.018, 0.25, 0.09] ),
+			opacityTween : new Tween( [0.9, 5.5], [1, 0] ),
+			colorTween   : new Tween( [0.5, 1.0], [ new THREE.Vector3(0.02, 1, 0.5), new THREE.Vector3(0.05, 1, 0) ] ),
+			blendStyle : THREE.AdditiveBlending,  
+			
+			particlesPerSecond : 50,
+			particleDeathAge   : 0.5,		
+			emitterDeathAge    : 60
+		};
+
+		can.particleTexture.needsUpdate = true;
+
+		return can;
+	}
+
+	var spawnFireTitan = function(vect, scene)
+	{	
+		var tr = new THREE.Vector3(0.0, 0, 0.0);
+		tr.x = vect.x;
+		tr.z = vect.z;
+		
+		engine = new ParticleEngine();
+		engine.setValues( candle(), tr ); 
+
+		engine.initialize(scene);
+	};
+
 	// Создает огонь
-	var spawnFire = function(numbFire)
+	var spawnFire = function(numbFire, scene)
 	{
-		var fire = new Fire(0, modelsLoader);
-		fires.push(fire);
-		fire.getMesh().position.x = (getRandomInt(10, 40)  + 100) / 100.0;
-		fire.getMesh().position.z = (- 100 + numbFire * (300.0/(count_fire - 10) - 5)) / 100.0;
+		var tr = new THREE.Vector3( 0.0, 0, 0.0);
+		tr.x = (getRandomInt(10, 40)  + 120) / 100.0;
+		tr.z = (- 95 + numbFire * (290.0/(count_fire) - 5)) / 100.0;
 		
-		fire.getMesh().rotation.y =  -3.14 / 2;
+		var engine1 = new ParticleEngine();
+		engine1.setValues( candle(), tr ); 
+
+		engine1.initialize(scene);
+		fires.push(engine1);
 		
-		scene.add(fire.getMesh());
-	};
-	
-	// создается огонь на поле
-	
-	var spawnFireSpace = function(numbFire)
+		var material_met = new THREE.MeshBasicMaterial({color: 0xF4A460});
+		var geometry_met = new THREE.PlaneGeometry(0.04, 0.04);
+		var fire_met = new THREE.Mesh(geometry_met, material_met);
+		fire_met.rotation.x = - 3.14 / 2;
+		
+		fire_met.position.x = tr.x - 0.06;
+		fire_met.position.z = tr.z;
+		fire_met.position.y = 0.4;
+		
+		minScene.add(fire_met);
+	}
+
+	var endFireSpace = function(position, scene)
 	{
-		var fire = new Fire(getRandomInt(0, 1) + 1, modelsLoader);
-		fires.push(fire);
-		fire.getMesh().position.x = (- 100 + getRandomInt(0, 200)) / 100.0;
-		fire.getMesh().position.z = (- 100 + getRandomInt(0, 200)) / 100.0;
-		fire.getMesh().position.y = -0.05;
-		
-		fire.getMesh().rotation.y =  -3.14 / 2;
-		
-		scene.add(fire.getMesh());
-	};
-	
-	var endFireSpace = function()
-	{
-		var fire = new Fire(getRandomInt(0, 1) + 1, modelsLoader);
-		fires.push(fire);
-		fire.getMesh().position.x = (- 170 + getRandomInt(0, 340)) / 100.0;
-		fire.getMesh().position.z = (- 170 + getRandomInt(0, 290)) / 100.0;
-		fire.getMesh().position.y = -0.05;
-		
-		fire.getMesh().rotation.y =  -3.14 / 2;
-		
-		scene.add(fire.getMesh());
-	};
+		var engine1 = new ParticleEngine();
+		engine1.setValues( candle(), position ); 
+
+		engine1.initialize(scene);
+		fires.push(engine1);
+	}
+
 	// Тут вся инициализация
 	var init = function(loader)
 	{
 		modelsLoader = loader;
 		scene = new THREE.Scene(); 
+		minScene = new THREE.Scene();
+		fireScene = new THREE.Scene(); 
 		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.0001, 7);
 		renderer = new THREE.WebGLRenderer({'antialias':true});  
 		
-		controls = new THREE.FirstPersonControls(camera, borders);
+		controls = new THREE.FirstPersonControls(camera, borders, minScene);
 		scene.add(controls.getObject());
 		
 		// Камера миникарты
 		mapCamera = new THREE.OrthographicCamera(-1.5, 1.5, 1.5, -1.5, -1.5, 7.0); // Left Right Top Bottom Near Far          	
 		mapCamera.up = new THREE.Vector3(0,0,-1);
 		mapCamera.lookAt(new THREE.Vector3(0,-1,0));
-		scene.add(mapCamera);
-	
+		minScene.add(mapCamera);
+		
+		var texture = THREE.ImageUtils.loadTexture( "textures/wall.png" );
+      	var material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent : true});
+		var geometry = new THREE.PlaneGeometry(2.6, 0.5);
+      	var minWall = new THREE.Mesh(geometry, material);
+      	
+		minWall.position.x = 0.0;
+		minWall.position.z = 1.25;
+		minWall.position.y = 1.0;
+		minWall.rotation.x = - 3.14 / 2;
+		
+		minScene.add(minWall);
+		
 		time = Date.now();
 		
 		// Настройки рендера
@@ -306,21 +356,17 @@ var Surface = function()
 		scene.add(dirLight);
 		scene.add(ambientLight);
 		scene.add(sunLight);
+		scene.add(spotLight);
 		
 	    skyBox = new SkyBox(loader);
 		scene.add(skyBox.getMesh());
 		
-		floor = new Terrain(scene, loader);
+		floor = new Terrain(scene, loader, minScene);
 		objects.push(floor.getMesh(1));
 		
-		for(var i = 0; i < count_fire - 10; i++)
+		for(var i = 0; i < count_fire; i++)
 		{
-			spawnFire(i);
-		}
-		
-		for(var i = 10; i < count_fire; i++)
-		{
-			spawnFireSpace(i);
+			spawnFire(i, fireScene);
 		}
 		
 		titleEnd = new Title();
@@ -340,7 +386,7 @@ var Surface = function()
 		{
 			if(controls.getHP() <= 0)
 			{
-				gameOver(state_titan[controls.getLevel()], controls.getEXPpart(), controls.getHPpart(), controls.getRung());
+				gameOver(state_titan[controls.getLevel()], controls.getEXPpart(), controls.getRung(), controls.getLevel());
 			}
 			// Обрабатываем движение главного героя
 			controls.update(delta);	
@@ -379,19 +425,17 @@ var Surface = function()
 			{
 				// Обрабатываем поведение людей
 				for(var i = 0; i < humans.length; i++)
-				{
-					humans[i].collision(objects, humans, i);
-					
+				{					
 					if(controls.getLevel() != 0 && !humans[i].TerrainPart() && humanDislocation == Dislocations.Cannon)
 					{
 						humans[i].runTo(delta, controls.getObject(), controls.getLevel());
 					}
 					else
 					{
-						var result = humans[i].update(delta, controls.getObject());
+						var result = humans[i].update(delta, controls.getObject(), humanSpeed);
 						if(result == HumanPosition.Backward)
 						{
-							controls.decreaseHP(humans[i].getExp());
+							controls.decreaseHP(humans[i].getExp() * humanPower, delta);
 						}
 					}
 					if(humans[i].getBlood()&&!humans[i].getAddBlood())
@@ -409,12 +453,16 @@ var Surface = function()
 						}
 						scene.remove(humans[i].getMesh(2));
 						scene.remove(humans[i].getMesh(1));
-						scene.remove(humans[i].getMesh(0));
-						controls.encreaseEXP(humans[i].getPut(), levelTime);
+						minScene.remove(humans[i].getMesh(0));
+						controls.encreaseEXP(delta, humans[i].getPut(), levelTime);
 						if(controls.getEXPpart() >= disChangeLine)
 						{
 							humanDislocation = Dislocations.Cannon;
-							disChangeLine += 20;
+							disChangeLine += 25;
+						}
+						if(controls.getLevel() == 2 && controls.getEXPpart() > 50 && humanPower == 1.0)
+						{
+							humanPower = 1.2;
 						}
 						humans.splice(i, 1);
 						$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + controls.getEXPpart() + '%, #444444 0%, #444444 100%');
@@ -424,10 +472,13 @@ var Surface = function()
 							$('#level').text(text_level[controls.getLevel()]);
 							$('#state').text(state_titan[controls.getLevel()]);
 							humanDislocation = Dislocations.Cannon;
-							disChangeLine = 20;
+							disChangeLine = 25;
 							gameLevel();
+							humanSpeed += 0.25;
 						}
 					}
+
+					humans[i].collision(objects, humans, i);
 				}
 
 				if(humanSpawnTime0 > 2000)
@@ -454,7 +505,7 @@ var Surface = function()
 			
 			for(var i = 0; i < count_fire; i++)
 			{
-				fires[i].update(delta, controls);
+				fires[i].update(0.008, controls);
 			}
 			
 			floor.updateCannon(delta, controls.getObject(), scene, controls);
@@ -466,18 +517,15 @@ var Surface = function()
 			renderer.clear();
 			
 			renderer.render(scene, camera);
+			renderer.render(fireScene, camera);
 			
 			if(!fireFly)
 			{
-				for(var i = 10; i < count_fire; i++)
-				{
-					fires[i].collision(objects);
-				}
 				floor.collision();
 				fireFly = true;
 			}
 			renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight );
-			renderer.render( scene, mapCamera );
+			renderer.render( minScene, mapCamera );
 		}
 		else
 		{
@@ -487,51 +535,88 @@ var Surface = function()
 				{
 					spotLight.position.set(controls.getObject().position.x, lightPosY, controls.getObject().position.z);
 					spotLight.target.position.set(controls.getObject().position.x, -0.5, controls.getObject().position.z);
-					if(lightPosY < 2.5) lightPosY += 0.001; //2.5
-					else gameOver(state_titan[controls.getLevel()], controls.getEXPpart(), controls.getHPpart(), controls.getRung());
+					if(lightPosY < 2.5) lightPosY += 0.00004 * delta; //2.5
+					else gameOver(state_titan[controls.getLevel()], controls.getEXPpart(), controls.getRung(), controls.getLevel());
 					if(!addTitanFire)
 					{
 						// пошла анимация заставки
 						soundEnd.play();
 						sound.pause();
+						for(var i = 0; i < count_fire; i++)
+						{
+							fires[i].destroy(fireScene);
+						}
+						count_fire = 0;
+						fires = [];
 						controls.noneDis();
 						controls.setZeroRotation();
+						floor.clearCannon(scene);
 						$('#skillPush').css('display', 'none');
 						$('#skillMight').css('display', 'none');
 						$('#live').css('display', 'none');
 						$('#oput').css('display', 'none');
 						$('#stateP').css('display', 'none');
 						
-						scene.remove(mapCamera);
-						scene.add(spotLight);
+						//scene.remove(mapCamera);
 				
 						addTitanFire = true;
 						TitanFire = new titanFire(modelsLoader);
 						scene.add(TitanFire.getMesh());
 						TitanFire.getMesh().position.x = controls.getObject().position.x;
 						TitanFire.getMesh().position.z = controls.getObject().position.z;
-						TitanFire.getMesh().position.y = 0.01;
 						
 						camera.position.x = -0.35;
+						camera.position.y = 0.04;
+						controls.getObject().position.y = 0.08;
 						camera.position.z = -0.35;
-						
-						for(var i = count_fire; i < count_fire + endFire; i++)
-						{
-							endFireSpace();
-							fires[i].setOpt();
-						}
 						
 						fireFly = false;
 						
 						floor.deleteForest(scene);
-						
-						engine = new ParticleEngine();
-						engine.setValues( Examples.smoke );
-						engine.initialize(scene);
+
+						for(var f = 0; f < endFireCount + 10; f++)
+						{
+							endFirePositions.push({
+								position: new THREE.Vector3(getRandomInt(0, 200) / 100.0 - 1.3,
+								                                    0.0,
+								                                    getRandomInt(0, 200) / 100.0 - 1.3),
+								inMap: false
+							});
+
+							if(endFirePositions[f].position.x < 0.15 && endFirePositions[f].position.x > -0.15)
+							{
+								endFirePositions[f].position.x = 0.15;
+							}
+
+							if(endFirePositions[f].position.z < 0.15 && endFirePositions[f].position.z > -0.15)
+							{
+								endFirePositions[f].position.z = 0.15;
+							}
+						}
+
+						var vaect = new THREE.Vector3(controls.getObject().position.x, controls.getObject().position.y, controls.getObject().position.z);
+						spawnFireTitan(vaect, scene);
 					}
 
+					// добавление огней от титана)
+					for(var f = 0; f < endFireCount + 10; f++)
+					{
+						if(!endFirePositions[f].inMap)
+						{
+							var dist = Math.pow(Math.pow(controls.getObject().position.x - endFirePositions[f].position.x, 2) + 
+								                Math.pow(controls.getObject().position.z - endFirePositions[f].position.z, 2), 0.5);
+
+							if(dist <= lightPosY + 0.1 )
+							{
+								endFireSpace(endFirePositions[f].position, fireScene);
+								endFirePositions[f].inMap = true;
+								count_fire++;
+							}
+						}
+					}
+					// --------------------------------
+
 					skyBox.update(TitanFire.getMesh().position);
-					
 					
 					for(var j = 0; j < humans.length; j++)
 					{
@@ -541,18 +626,14 @@ var Surface = function()
 						humans[j].update(delta, TitanFire.getMesh());
 					}
 					
-					for(var i = 0; i < count_fire + endFire; i++)
+					for(var i = 0; i < count_fire; i++)
 					{	
-						fires[i].update(delta, controls);
-						if(i > count_fire)
-						{
-							fires[i].opt(TitanFire.getMesh())
-						}
+						fires[i].update(delta / 5000);
 					}
 					
-					if(countAddtitle == 600)
+					if(countAddtitle == 400)
 					{
-						for(var j = 0; j < 2; j++)
+						for(var j = 0; j < 4; j++)
 						{
 							scene.add(titleEnd.getMesh(j));
 							titleAdd = true;
@@ -565,13 +646,13 @@ var Surface = function()
 						titleEnd.update(delta);
 					}
 					
-					TitanFire.update(delta, scene);
-					engine.update( delta / 1000 );
+					engine.update(delta / 5000);
 					var w = window.innerWidth, h = window.innerHeight;
 					
 					camera.position.x += 0.008 * Math.cos(anl);
 					camera.position.z += 0.008 * Math.sin(anl);
-					camera.position.y = 0.05;
+					camera.position.y = 0.04;
+					controls.getObject().position.y = 0.08;
 					
 					camera.lookAt(new THREE.Vector3(0,0,0));
 					anl += 0.015;
@@ -579,12 +660,11 @@ var Surface = function()
 					renderer.clear();
 			
 					renderer.render(scene, camera);
+					renderer.render(fireScene, camera);
+
 					if(!fireFly)
 					{
-						for(var i = count_fire; i < count_fire + endFire; i++)
-						{
-							fires[i].collision(objects);
-						}
+						TitanFire.collision(objects);
 						fireFly = true;
 					}
 				}
@@ -626,6 +706,7 @@ function pointerLockChange()
 			$('.leaning').eq(index).css('display', 'block');
 			$('#bouble').css('display', 'block');
 			$('.errorMgsFull').eq(0).css('display', 'none');
+			firstError = true;
 		}
 	} 
 	else 
@@ -662,7 +743,7 @@ function gameLevel()
 	level_up = 1;
 }
 
-function gameOver(level_over, oput_over, hp, sp)
+function gameOver(level_over, oput_over, sp, endLevel)
 {
 	document.exitPointerLock = document.exitPointerLock    ||
 							   document.mozExitPointerLock ||
@@ -673,7 +754,15 @@ function gameOver(level_over, oput_over, hp, sp)
 
 	var g = "";
 	var s = "<div style = \"background-color: #FFFFFF; width: 350px; height: \"";
-	var gs = "";
+
+	if(endLevel == 1)
+	{
+		oput_over += 30;
+	}
+	if(endLevel == 2)
+	{
+		oput_over += 90;
+	}
 	if(sp.length == 0)
 	{
 		s += "190px\">";
@@ -695,7 +784,7 @@ function gameOver(level_over, oput_over, hp, sp)
 	else
 	{
 		var len = 220;
-		for(var i = 1 ; i < countSp; i++) len += 35; 
+		for(var i = 1 ; i < sp.length; i++) len += 35; 
 		
 		s += len.toString() + "px\">";
 		
@@ -710,16 +799,11 @@ function gameOver(level_over, oput_over, hp, sp)
 		s += "<tr><td>Опыт: " + oput_over + "</td></tr>";
 		s += "<tr><td align = \"center\"><b>Звания</b></td></tr>";
 		
-		gs = "";
-		
-		for(var i = 0 ; i < countSp; i++) s += "<tr><td>" + sp[i] + "</td></tr>";
-		for(var i = 0 ; i < countSp; i++) g += "<tr><td style = \"padding-left: 40px;\">" + sp[i] + "</td></tr>";
-
-		g += gs;
-		s += gs;
+		for(var i = 0 ; i < sp.length; i++) s += "<tr><td>" + sp[i] + "</td></tr>";
+		for(var i = 0 ; i < sp.length; i++) g += "<tr><td style = \"padding-left: 40px;\">" + sp[i] + "</td></tr>";
 	}
 	
-	g += "</table></div>";
+	g += "</table>";
 	$('#textOver').html(g);
 	
 	s += "<tr><td align =  \"center\"><a href = \"\"> Играть </a></td></tr>";
@@ -764,9 +848,14 @@ function restart()
 	
 	$('.errorMgsFull').eq(0).css('display', 'none');
 	$('.models-loading').eq(0).css('display', '');
+	$('#bouble').css('display', 'none');
+	for(var i = 0; i < 3; i++)
+	{
+		$('.leaning').eq(i).css('display', 'none');
+	}
 	surface = new Surface();
 	loader  = new ModelsLoader(surface, false);
-
+	if(firstError) $('.errorMgsFull').eq(0).css('display', 'none');
 	index = 0;
 	lockPointer();
 }

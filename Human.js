@@ -193,8 +193,8 @@ var Human = function(humanType, loader)
 	var blood = function(delta, v)
 	{
 		blood_anim.update(delta, v);
-		dying_count ++;
-		if(dying_count == 20) kill();
+		dying_count += 0.02 * delta;
+		if(dying_count >= 20) kill();
 	};
 	
 	this.setBlood = function(fl)
@@ -320,7 +320,7 @@ var Human = function(humanType, loader)
 	// = 0 - человек бежит
 	// = 1 - забежал сзади
 	// = 2 - тусняк
-	this.update = function(delta, camera) 
+	this.update = function(delta, camera, speed) 
 	{	
 		delta *= 0.1;
 		
@@ -459,9 +459,9 @@ var Human = function(humanType, loader)
 		setLine(camera, velocity);
 
 		// Двигаем объект
-		human.translateX(velocity.x);
-		human.translateY(velocity.y); 
-		human.translateZ(velocity.z);
+		human.translateX(velocity.x * speed);
+		human.translateY(velocity.y * speed); 
+		human.translateZ(velocity.z * speed);
 		
 		if(dying) blood(delta * 10, human.position);
 		if(human.position.y < - 0.02 && velocity.y <= 0 && humanType == HumanTypes.Flyer)
@@ -476,7 +476,7 @@ var Human = function(humanType, loader)
 		{
 			redline.position.x = human.position.x;
 			redline.position.z = human.position.z;
-			redline.position.y = human.position.y + 0.015;
+			redline.position.y = human.position.y + 0.0015 * delta;
 		}
 		return posType;
 	};

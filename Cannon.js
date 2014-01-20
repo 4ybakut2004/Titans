@@ -96,12 +96,12 @@ var Cannon = function(model, loader)
 	this.holeBoomF = function(delta)
 	{
 		animator.update(delta);
-		boom_count ++;
+		boom_count += 0.1 * delta;
 		if(!animator.isFirst()) 
 		{
 			animator.setForCount(0);
 			boom_count = 0;
-			holeBoom.position.y = -20;
+			//holeBoom.position.y = -2 * delta;
 		}
 	};
 	
