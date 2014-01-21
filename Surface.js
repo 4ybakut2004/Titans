@@ -37,7 +37,7 @@ var Surface = function()
 	// Переменная, отвечающая за то, открыто меню, или нет
 	var prioritet = 0;
 
-	var scene, camera, minScene, mapCamera, renderer, controls, time, fireScene;
+	var scene, camera, minScene, disScene, mapCamera, renderer, controls, time, fireScene;
 	var clock = new THREE.Clock();
 	var humanSpawnTime0 = 0;
 	var humanSpawnTime1 = 0;
@@ -60,6 +60,7 @@ var Surface = function()
 	var addTitanFire = false;
 	var TitanFire;
 	
+	var disine;
 	var titleEnd;
 	var titleAdd = false;
 	var countAddtitle = 0;
@@ -121,9 +122,10 @@ var Surface = function()
 	    camera.aspect = window.innerWidth / window.innerHeight;
 	    camera.updateProjectionMatrix();
 
+	    disine.update();
 	    renderer.setSize( window.innerWidth, window.innerHeight );
 	    
-	    var z = window.innerHeight/window.innerWidth;
+	    //var z = window.innerHeight/window.innerWidth;
 	};
 
 	var lightPosY = -0.10;
@@ -309,13 +311,16 @@ var Surface = function()
 	var init = function(loader)
 	{
 		modelsLoader = loader;
+		
 		scene = new THREE.Scene(); 
 		minScene = new THREE.Scene();
 		fireScene = new THREE.Scene(); 
+		disScene = new THREE.Scene(); 
+		
 		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.0001, 7);
 		renderer = new THREE.WebGLRenderer({'antialias':true});  
 		
-		controls = new THREE.FirstPersonControls(camera, borders, minScene);
+		controls = new THREE.FirstPersonControls(camera, borders, minScene, disScene);
 		scene.add(controls.getObject());
 		
 		// Камера миникарты
@@ -335,6 +340,8 @@ var Surface = function()
 		minWall.rotation.x = - 3.14 / 2;
 		
 		minScene.add(minWall);
+		
+		disine = new Dis(disScene);
 		
 		time = Date.now();
 		
@@ -388,6 +395,7 @@ var Surface = function()
 			{
 				gameOver(state_titan[controls.getLevel()], controls.getEXPpart(), controls.getRung(), controls.getLevel());
 			}
+
 			// Обрабатываем движение главного героя
 			controls.update(delta);	
 			controls.collision(objects);
@@ -420,7 +428,6 @@ var Surface = function()
 
 			// Двигаем скайбокс вместе с камерой
 			skyBox.update(controls.getObject().position);
-			$('#live').css('backgroundImage', 'linear-gradient(0deg, #448844 0%, #448844 ' + controls.getHPpart() + '%, #884444 0%, #884444 100%');
 			if(index > count_story)
 			{
 				// Обрабатываем поведение людей
@@ -465,12 +472,8 @@ var Surface = function()
 							humanPower = 1.2;
 						}
 						humans.splice(i, 1);
-						$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + controls.getEXPpart() + '%, #444444 0%, #444444 100%');
 						if(controls.getEXP() < 1 && controls.getLevel() < 3)
 						{
-							// level up
-							$('#level').text(text_level[controls.getLevel()]);
-							$('#state').text(state_titan[controls.getLevel()]);
 							humanDislocation = Dislocations.Cannon;
 							disChangeLine = 25;
 							gameLevel();
@@ -524,7 +527,11 @@ var Surface = function()
 				floor.collision();
 				fireFly = true;
 			}
-			renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight );
+			
+			renderer.setViewport( 0, 0, w, h );
+			renderer.render( disScene, camera );
+
+			renderer.setViewport( 18, h - mapHeight - 20, mapWidth, mapHeight );
 			renderer.render( minScene, mapCamera );
 		}
 		else
@@ -548,16 +555,10 @@ var Surface = function()
 						}
 						count_fire = 0;
 						fires = [];
-						controls.noneDis();
 						controls.setZeroRotation();
 						floor.clearCannon(scene);
 						$('#skillPush').css('display', 'none');
 						$('#skillMight').css('display', 'none');
-						$('#live').css('display', 'none');
-						$('#oput').css('display', 'none');
-						$('#stateP').css('display', 'none');
-						
-						//scene.remove(mapCamera);
 				
 						addTitanFire = true;
 						TitanFire = new titanFire(modelsLoader);
@@ -675,8 +676,6 @@ var Surface = function()
 	this.start = function(loader)
 	{
 		init(loader);
-		$('#live').css('backgroundImage', 'linear-gradient(0deg, #448844 0%, #448844 ' + 100 + '%, #884444 0%, #884444 100%');
-		$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + 0 + '%, #444444 0%, #444444 100%');
 		render();
 	};
 	
@@ -887,8 +886,4 @@ $(document).ready(function()
 	//sound.play();
 
 	soundEnd = new Sound(['audio/end.ogg']);
-	
-	$('#state').text(state_titan[0]);
-	$('#live').css('backgroundImage', 'linear-gradient(0deg, #448844 0%, #448844 ' + 100 + '%, #884444 0%, #884444 100%');
-	$('#oput').css('backgroundImage', 'linear-gradient(0deg, #888844 0%, #888844 ' + 0 + '%, #444444 0%, #444444 100%');
 });

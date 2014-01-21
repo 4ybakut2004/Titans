@@ -17,13 +17,13 @@ canvas
 {
 	position: relative; 
 	float: right;
-	width: 360px; 
+	width: 300px; 
 	height: 0px;
 }
 
 .card
 {
-	width: 465px; 
+	width: 405px; 
 	height: 30px;
 	overflow: hidden; 
 	position: absolute;

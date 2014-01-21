@@ -226,16 +226,16 @@ var Human = function(humanType, loader)
 	{
 		for(var i = 0; i < humans.length; i++)
 		{
-			if(i != number && humans[i].getFlying() == flying)
+			if(i != number && humans[i].getFlying() == flying && posType != HumanPosition.Backward && humans[i].getPosType() != HumanPosition.Backward)
 			{
 				var dist = Math.pow(Math.pow(human.position.x - humans[i].getMesh(1).position.x, 2) + Math.pow(human.position.z - humans[i].getMesh(1).position.z, 2), 0.5);
-				if(dist < 0.05)
+				if(dist < 0.03)
 				{
 					var vec = new THREE.Vector2(human.position.x - humans[i].getMesh(1).position.x, human.position.z - humans[i].getMesh(1).position.z);
 					vec = vec.normalize();
 					
-					humans[i].getMesh(1).position.x -= vec.x * (0.05 - dist);
-					humans[i].getMesh(1).position.z -= vec.y * (0.05 - dist);
+					humans[i].getMesh(1).position.x -= vec.x * (0.03 - dist);
+					humans[i].getMesh(1).position.z -= vec.y * (0.03 - dist);
 				}
 			}
 		}

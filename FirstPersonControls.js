@@ -21,7 +21,7 @@ var rungArray = new Array
 "Титан-собери все патроны – лишил бойцов боеприпасов, героически собрав их своим телом.<br/>"
 );
 
-THREE.FirstPersonControls = function(camera, borders, minS) 
+THREE.FirstPersonControls = function(camera, borders, minS, disScene) 
 {
 	//--------------------------------------начало званий--------------------------------------
 	var distance = 0;						// сколько всего пробежал
@@ -123,8 +123,11 @@ THREE.FirstPersonControls = function(camera, borders, minS)
 	var mini_titan;
 	
 	var bloodSprite;				// хочу крови!!
-	var FullBloodSprite = 250;		// полная полоска жажды
-	var constBlood = 0.05;				// константа жажды
+	var FullBloodSprite = 71;		// полная полоска жажды
+	var constBlood = 0.0167;		// константа жажды
+
+	var hpSprite;					// хочу крови!!
+	var expSprite;
 	
 	var theEnd = false;
 	
@@ -154,11 +157,6 @@ THREE.FirstPersonControls = function(camera, borders, minS)
 			hand.scale.set(200, 256, 1.0); // imageWidth, imageHeight
 			return hand;
 		};
-
-		l_hand = createHand('textures/humans/l_hand.png', 50, window.innerHeight + 180, THREE.SpriteAlignment.bottomLeft);		
-		pitchObject.add(l_hand);
-		r_hand = createHand('textures/humans/r_hand.png', window.innerWidth - 100, window.innerHeight + 180, THREE.SpriteAlignment.bottomRight);		
-		pitchObject.add(r_hand);
 		
 		var texture = THREE.ImageUtils.loadTexture('textures/humans/face.png');
 		texture.anisotropy = 16;
@@ -170,18 +168,34 @@ THREE.FirstPersonControls = function(camera, borders, minS)
 		minS.add(mini_titan);
 		
 		l_blood = createHand('textures/humans/l_blood.png', -1000, window.innerHeight, THREE.SpriteAlignment.bottomLeft);		
-		pitchObject.add(l_blood);
+		disScene.add(l_blood);
 		r_blood = createHand('textures/humans/r_blood.png', window.innerWidth + 1000, window.innerHeight, THREE.SpriteAlignment.bottomRight);		
-		pitchObject.add(r_blood);
+		disScene.add(r_blood);
+
 		l_blood.position.set(-200, window.innerHeight + 180, 0);		
 		r_blood.position.set(window.innerWidth + 200, window.innerHeight + 180, 0);
 		l_blood.material.opacity = 0;
 		r_blood.material.opacity = 0;
 		
-		bloodSprite = createHand('textures/redline.png', window.innerWidth / 2 - 250, window.innerHeight + 25, THREE.SpriteAlignment.bottomLeft);	
-		bloodSprite.scale.set(FullBloodSprite, 50, 1.0);		
-		pitchObject.add(bloodSprite);
+		bloodSprite = createHand('textures/dis/rad.png', window.innerWidth / 2 + 482 / 2 - 157, window.innerHeight - 8.5 + (71 - FullBloodSprite) , THREE.SpriteAlignment.bottomLeft);	
+		bloodSprite.scale.set(FullBloodSprite, 71, 1.0);	
+		bloodSprite.material.uvScale.y = 1;	
+		disScene.add(bloodSprite);
+
+		hpSprite = createHand('textures/dis/green.png', window.innerWidth / 2 - 223, window.innerHeight - 8.5, THREE.SpriteAlignment.bottomLeft);	
+		hpSprite.scale.set(71, 71, 1.0);	
+		hpSprite.material.uvScale.y = 1;	
+		disScene.add(hpSprite);
 		
+		expSprite = createHand('textures/dis/oput.png', window.innerWidth - 260, 10, THREE.SpriteAlignment.topLeft);	
+		expSprite.scale.set(0, 8, 1.0);	
+		expSprite.material.uvScale.x = 0;	
+		disScene.add(expSprite);
+
+		l_hand = createHand('textures/humans/l_hand.png', window.innerWidth * 0.05, window.innerHeight + 180, THREE.SpriteAlignment.bottomLeft);		
+		disScene.add(l_hand);
+		r_hand = createHand('textures/humans/r_hand.png', window.innerWidth - window.innerWidth * 0.05, window.innerHeight + 180, THREE.SpriteAlignment.bottomRight);		
+		disScene.add(r_hand);
 		$('#skillMight').css('display', 'none');
 		$('#skillPush').css('display', 'none');
 		$('#skillPush').css('backgroundImage', 'linear-gradient(90deg, #008B8B 0%, #008B8B ' + 100 + '%, #00CDCD 0%, #00CDCD 100%');
@@ -411,12 +425,24 @@ THREE.FirstPersonControls = function(camera, borders, minS)
 		{		
 			FullBloodSprite -= constBlood * delta;
 			if(FullBloodSprite < 0) FullBloodSprite = 0;
-			if(FullBloodSprite <= 125) hp -= 0.07 * delta;
+			if(FullBloodSprite <= 35.5)
+			{
+				hp -= 0.07 * delta;
+			}
 		}
-		bloodSprite.scale.set(FullBloodSprite, 50, 1.0);
-		bloodSprite.position.set( window.innerWidth / 2 - FullBloodSprite, window.innerHeight + 25, 0 );
-		if(hp + 0.05 * delta < maxhp) hp += 0.05 * delta;
 		
+		bloodSprite.scale.set(71, 71 * FullBloodSprite / 71, 1.0);
+		bloodSprite.material.uvScale.y = FullBloodSprite / 71;
+		bloodSprite.position.set(window.innerWidth / 2 + 482 / 2 - 160, window.innerHeight - 8.5 - (35.5 - (71 * FullBloodSprite / 71) / 2), -10.0 );
+		if(hp + 0.05 * delta < maxhp)
+		{
+			hp += 0.05 * delta;
+		}
+		
+		hpSprite.scale.set(71, 71 * hp / 100, 1.0);
+		hpSprite.material.uvScale.y = hp / 100;
+		hpSprite.position.set(window.innerWidth / 2 - 222.5 , window.innerHeight - 8.5 - (35.5 - (71 * hp / 100) / 2), -10.0 );
+
 		if(move_hand)
 		{
 			r_hand.rotation += delta*sing*0.03;
@@ -468,8 +494,8 @@ THREE.FirstPersonControls = function(camera, borders, minS)
 			if(dista > 32) dista = 32;
 			if(dista < 0) dista = 0;
 			if(dista > 31 || dista < 1) znack = - znack;
-			l_hand.position.set( 50, window.innerHeight + 180 - dista, 0 );
-			r_hand.position.set( window.innerWidth - 100, window.innerHeight + 180 + dista, 0 );
+			l_hand.position.set( window.innerWidth * 0.05, window.innerHeight + 180 - dista, 0 );
+			r_hand.position.set( window.innerWidth - window.innerWidth * 0.05, window.innerHeight + 180 + dista, 0 );
 		}
 		// Использованная энергия не может быть отрицательной
 		usedEnergy = Math.max(0, usedEnergy);
@@ -609,8 +635,13 @@ THREE.FirstPersonControls = function(camera, borders, minS)
 	this.encreaseEXP = function(delta, newExp, timeLevel)
 	{
 		exp += newExp;
-		if(FullBloodSprite + 0.5 * delta <= 250) FullBloodSprite += 0.5 * delta;
-		else FullBloodSprite = 250;
+		if(FullBloodSprite + 0.167 * delta <= 71) FullBloodSprite += 0.167 * delta;
+		else FullBloodSprite = 71;
+	
+		expSprite.scale.set(243 * exp / state_opt_level[level], 8, 1.0);
+		expSprite.material.uvScale.x = exp / state_opt_level[level];
+		expSprite.position.set(window.innerWidth - 260 - 121.5 * exp / state_opt_level[level], 10,  0.0);
+
 		if(exp >= state_opt_level[level])
 		{
 			level ++;
@@ -633,7 +664,6 @@ THREE.FirstPersonControls = function(camera, borders, minS)
 					if(typeSkillEnd == 0) $('#textSkillPush').text('Ударная волна');
 					else $('#textSkillPush').text('Прыжок смерти');
 					$('#skillPush').css('display', 'block');
-					constBlood = 0.01;
 				}
 			}
 			else
@@ -641,6 +671,10 @@ THREE.FirstPersonControls = function(camera, borders, minS)
 				theEnd = true;
 				level = 2;
 			}
+
+			expSprite.scale.set(243 * exp / state_opt_level[level], 8, 1.0);
+			expSprite.material.uvScale.x = exp / state_opt_level[level];
+			expSprite.position.set(window.innerWidth - 260 - 121.5 * exp / state_opt_level[level], 10,  0.0);
 		}
 	};
 	
@@ -725,16 +759,6 @@ THREE.FirstPersonControls = function(camera, borders, minS)
 				break;
 		}
 		return distance;
-	};
-	
-	this.noneDis = function()
-	{
-		pitchObject.remove(l_blood);
-		pitchObject.remove(r_blood);
-		pitchObject.remove(l_hand);
-		pitchObject.remove(r_hand);
-		pitchObject.remove(bloodSprite);
-		yawObject.remove(mini_titan);
 	};
 	
 	this.setZeroRotation = function()
