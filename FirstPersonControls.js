@@ -53,7 +53,7 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 	
 	
 	// ступени опыта
-	var state_opt_level = new Array(1, 1, 120); // 30 60 120
+	var state_opt_level = new Array(30, 60, 120); // 30 60 120
 	var level = 0;
 
 	// ”казатель на себ€
