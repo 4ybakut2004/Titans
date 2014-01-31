@@ -192,7 +192,7 @@ var Terrain = function(_scene, loader, _minScene)
 
 	this.deleteForest = function(sceneR)
 	{
-		for(var i = 0; i < 6; i++)
+		for(var i = 0; i < 9; i++)
 		{
 			sceneR.remove(forestR[i]);
 		}

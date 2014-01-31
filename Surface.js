@@ -2,13 +2,12 @@
 // Здесь создается рендер, объекты мира, а так же происходит отрисовка
 
 var text_level = new Array(
-"Второй уровень. Внимание! За твоей спиной новые враги! Они умнее и изворотливее прежних! Берегись! "
-+ "К тому же они умеют управлять УПМ. Но ты тоже не остался прежним! Теперь ты умеешь защищать свое тело броней."
-+ "Для активации используйте 'q'.",
-"Третий уровень. Что же это? Чувствуешь прилив силы? Этой аурой наделили тебя умершие люди. Теперь ты можешь волной "
-+ "отталкивать окружающие предметы, но эта сила не бесконечна! Так что пользуйся осмотрительно. Для активации испльзуй 'e'"
-+ "К тому же тебя ждут новые опасности, люди все сильнее ополчаются против тебя. Теперь с домов на тебя наведен прицел."
-+ "В самых неподходящий момент в спину может угодить снаряд. К тому же урон, армия летунов тоже возросла в силе!"
+"Второй уровень. Что же это? Чувствуешь прилив силы? Этой аурой наделили тебя умершие люди. Теперь ты можешь покрывать свое тело непробиваемой броней (активация - 'e'), или "
++ "убегать (активация - 'shift') от них с невероятной скоростью! Только будь внимателен, твои способности не безграничны, им необходимо некоторое время для восстановления!"
++ "И последнее! Посмотри по сторонам - территория возле стены стала опасной - люди выкатили пушки и теперь ведут обстрел по тебе. ",
+"Третий уровень. Внимание! За твоей спиной новые враги! Они умнее и изворотливее прежних – их атаки гораздо сильнее!"
++ " Но и ты не стоишь на месте. Теперь в твоем арсенале появилась еще одна новая способность. Ударная волна (активация - 'q')- откидывает людей, находящихся на некотором расстоянии от тебя."
++ " Или смертоносный прыжок (активация - 'пробел'), который убивает всех людей, находящихся очень близко к тебе."
 );
 //----------------------------------------------------------------------------------------------------
 var getRandomInt = function(min, max)
@@ -125,7 +124,7 @@ var Surface = function()
 	    disine.update();
 	    renderer.setSize( window.innerWidth, window.innerHeight );
 	    
-	    //var z = window.innerHeight/window.innerWidth;
+	    controls.resize();
 	};
 
 	var lightPosY = -0.10;
@@ -451,6 +450,8 @@ var Surface = function()
 						humans[i].setAddBlood(true);
 					}
 					
+					humans[i].collision(objects, humans, i);
+					
 					if(humans[i].getAlive() == false)
 					{
 						if(humans[i].getType() == HumanTypes.Flyer)
@@ -461,7 +462,7 @@ var Surface = function()
 						scene.remove(humans[i].getMesh(2));
 						scene.remove(humans[i].getMesh(1));
 						minScene.remove(humans[i].getMesh(0));
-						controls.encreaseEXP(delta, humans[i].getPut(), levelTime);
+						controls.encreaseEXP(delta, humans[i].getPut(), levelTime, disScene);
 						if(controls.getEXPpart() >= disChangeLine)
 						{
 							humanDislocation = Dislocations.Cannon;
@@ -478,10 +479,10 @@ var Surface = function()
 							disChangeLine = 25;
 							gameLevel();
 							humanSpeed += 0.25;
+							disine.updateLevel(controls.getLevel(), disScene);
+							$('#level').text(text_level[controls.getLevel() - 1]);
 						}
 					}
-
-					humans[i].collision(objects, humans, i);
 				}
 
 				if(humanSpawnTime0 > 2000)
@@ -756,11 +757,11 @@ function gameOver(level_over, oput_over, sp, endLevel)
 
 	if(endLevel == 1)
 	{
-		oput_over += 30;
+		oput_over += 10;
 	}
 	if(endLevel == 2)
 	{
-		oput_over += 90;
+		oput_over += 30;
 	}
 	if(sp.length == 0)
 	{
@@ -770,13 +771,13 @@ function gameOver(level_over, oput_over, sp, endLevel)
 		g += "<table CELLPADDING = 5 style = \"width: 98%;\">";
 		
 		g += "<tr><td style = \"padding-left: 40px;\">" + level_over  + "</td></tr>";
-		g += "<tr><td style = \"padding-left: 40px;\">Опыт: " + oput_over + "</td></tr>";
+		g += "<tr><td style = \"padding-left: 40px;\">Опыт: " + Math.round(oput_over) + "</td></tr>";
 		g += "<tr><td align = \"center\"><b style = \"font-size: 18px;\">Звания</b></td></tr>"; 
 		
 		g += "<tr><td align = \"center\">Увы, ваша игра не смогла ничем выделиться.</td></tr>";
 		
 		s += "<tr><td>" + level_over  + "</td></tr>";
-		s += "<tr><td>Опыт: " + oput_over + "</td></tr>";
+		s += "<tr><td>Опыт: " + Math.round(oput_over) + "</td></tr>";
 		s += "<tr><td align = \"center\"><b>Звания</b></td></tr>";
 		s += "<tr><td>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspУвы, ваша игра не смогла ничем выделиться.</td></tr>"; //
 	}
@@ -791,11 +792,11 @@ function gameOver(level_over, oput_over, sp, endLevel)
 		g += "<table CELLPADDING = 5 style = \"width: 98%;\">";
 	
 		g += "<tr><td style = \"padding-left: 40px;\">" + level_over  + "</td></tr>";
-		g += "<tr><td style = \"padding-left: 40px;\">Опыт: " + oput_over + "</td></tr>";
+		g += "<tr><td style = \"padding-left: 40px;\">Опыт: " + Math.round(oput_over) + "</td></tr>";
 		g += "<tr><td align = \"center\"><b style = \"font-size: 18px;\">Звания</b></td></tr>"; 
 		
 		s += "<tr><td>" + level_over  + "</td></tr>";
-		s += "<tr><td>Опыт: " + oput_over + "</td></tr>";
+		s += "<tr><td>Опыт: " + Math.round(oput_over) + "</td></tr>";
 		s += "<tr><td align = \"center\"><b>Звания</b></td></tr>";
 		
 		for(var i = 0 ; i < sp.length; i++) s += "<tr><td>" + sp[i] + "</td></tr>";

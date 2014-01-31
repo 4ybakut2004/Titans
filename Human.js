@@ -30,7 +30,7 @@ var Human = function(humanType, loader)
 	var ray = new THREE.Raycaster();
 	ray.ray.direction.set(0, -1, 0);
 	
-	var blood_anim = new Blood();
+	var blood_anim = new Blood(loader);
 	var add_blood = false;
 	var flying;
 	var timeAtFloor = 0;
@@ -80,7 +80,8 @@ var Human = function(humanType, loader)
 				exp = 3;
 				put = 2;
 				
-				var texture_l = THREE.ImageUtils.loadTexture('textures/redline.png');
+				var texture_l = loader.redline['./textures/redline.png'].clone();
+				texture_l.needsUpdate = true;
 				var material_l = new THREE.SpriteMaterial({map: texture_l, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true, transparent : true});
 				redline = new THREE.Sprite(material_l);
 				redline.scale.set( 0.008, 0.002, 1.0 );
@@ -304,6 +305,10 @@ var Human = function(humanType, loader)
 		human.translateZ(velocity.z);
 		
 		if(dying) blood(delta * 10, human.position);
+		if(human.position.y < - 0.02 && velocity.y <= 0 && humanType == HumanTypes.Flyer)
+		{
+			flying = false;
+		}
 		
 		human_met.position.x = human.position.x;
 		human_met.position.z = human.position.z;

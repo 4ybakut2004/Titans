@@ -1,9 +1,11 @@
+
+	
 body 
 {
 	color: #000;
 	font-family:Monospace;
 	font-size:13px;
-	margin: 0px;
+	margin: 0px auto;
 	overflow: hidden;
 }
 
@@ -48,6 +50,12 @@ p
 {
 	font-size: 16px;
 	padding: 10px;
+}
+
+td
+{
+	font-size: 16px;
+	padding: 2px;
 }
 
 a 
@@ -121,14 +129,14 @@ a:hover
 
 .leaning
 {
+	background-image: url('textures/dis/pl.png');
 	position: absolute; 
-	width: 600px; 
-	height: 90px;
+	width: 530px; 
+	height: 106px;
 	display: none;
-	border: double #8B4513 4px;
-	padding: 7px;
-	background-color: #ffffff; 
-    margin: 25% 25% 25% 25%;
+	padding-top: 14px;
+	padding-left: 10px;
+    margin: 22% 30% 0 30%;
 }
 
 .errorMgs
@@ -158,6 +166,7 @@ a:hover
 .text
 {
 	margin-top: -5px;
+	color: #ffffff;
 }
 
 #relis

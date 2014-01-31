@@ -1,12 +1,13 @@
 function ModelsLoader(surface, first)
 {
-	var modelsCount       = 21;
+	var modelsCount       = 23;
 	var housesCount       = 0;
 	var cannonsCount      = 0;
 	var loadedModelsCount = 0;
 	this.houses           = [];
 	this.cannons          = [];
 	this.humans           = {};
+	this.blood            = {};
 	this.trees            = [];
 	this.skybox           = {};
 	this.floor            = {};
@@ -15,6 +16,7 @@ function ModelsLoader(surface, first)
 	this.trees            = {};
 	this.treemodels       = [];
 	this.grass			  = {};
+	this.redline          = {};
 	var scope             = this;
 
 	var paths = 
@@ -39,7 +41,9 @@ function ModelsLoader(surface, first)
 		{'path': './models/fireTitan/witch.js',           	  'type': 'fireTitan'},
 		{'path': './textures/forest.png',                     'type': 'trees'},
 		{'path': './textures/candle.png',                     'type': 'fire'},
-		{'path': './textures/miniGrass.png',                  'type': 'grass'}
+		{'path': './textures/miniGrass.png',                  'type': 'grass'},
+		{'path': './textures/humans/blood.png',               'type': 'blood'},
+		{'path': './textures/redline.png',                    'type': 'redline'}
 	];
 
 	var load = function(path)
@@ -104,6 +108,8 @@ function ModelsLoader(surface, first)
 			case 'trees':
 			case 'fire':
 			case 'grass':
+			case 'blood':
+			case 'redline':
 				scope[path.type][path.path] = THREE.ImageUtils.loadTexture(path.path, undefined, function(){
 					loadedModelsCount++;
 					$('.models-loading').eq(0).css('background', 'linear-gradient(90deg, #B0C4DE 0%, #B0C4DE ' + (100 * loadedModelsCount / modelsCount) + '%, #ffffff 0%, #ffffff 100%)');

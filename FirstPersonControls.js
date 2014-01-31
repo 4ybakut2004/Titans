@@ -39,21 +39,21 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 	var fullGun = 0;						// всего выпущено зар€дов
 	
 	//---------------------------------max---------------------------------------------------
-	var maxdistance = 100;					// сколько всего пробежал
-	var maxhit = 5000;						// сколько получил всего ударов 
-	var maxjump = 200;						// сколько всего раз прыгнул	
-	var maxrunning = 150;					// сколько раз задействовал бег 
-	var maxdamage = 1000;					// сколько всего нанесли уровна	
-	var maxbloomer = 200;					// сколько хлопал руками просто так 
+	var maxdistance = 110;					// сколько всего пробежал
+	var maxhit = 500;						// сколько получил всего ударов 
+	var maxjump = 100;						// сколько всего раз прыгнул	
+	var maxrunning = 100;					// сколько раз задействовал бег 
+	var maxdamage = 700;					// сколько всего нанесли уровна	
+	var maxbloomer = 40;					// сколько хлопал руками просто так 
 	var maxkiller = 10;						// сколько раз уложил толпу		
 	var maxbestTime = 10000;				// врем€ прохода уровн€ 1
-	var maxside = 3000;						// сколько раз натыкалс€ на дома и лес
+	var maxside = 300;						// сколько раз натыкалс€ на дома и лес
 	var maxgun = 30;						// процент пойманых снар€дов от пушки
 	//--------------------------------------конец званий--------------------------------------
 	
 	
 	// ступени опыта
-	var state_opt_level = new Array(30, 60, 120); // 30 60 120
+	var state_opt_level = new Array(1, 1, 120); // 30 60 120
 	var level = 0;
 
 	// ”казатель на себ€
@@ -130,6 +130,9 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 	var expSprite;
 	
 	var theEnd = false;
+
+	var spriteSkillLevel2;
+	var spriteSkillLevel3;
 	
 	// –абочие переменные
 	var pitchObject = new THREE.Object3D();
@@ -145,19 +148,19 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 	var move_hand = false;
 	projector = new THREE.Projector();
 
-	var initialize = function()
+	var createHand = function(path, x, y, _alignment)
 	{
-		var createHand = function(path, x, y, _alignment)
-		{
-			var texture = THREE.ImageUtils.loadTexture(path);
-			texture.anisotropy = 16;
-			var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: true, alignment: _alignment, transparent: true});
-			var hand = new THREE.Sprite(material);
-			hand.position.set(x, y, 0);
-			hand.scale.set(200, 256, 1.0); // imageWidth, imageHeight
-			return hand;
-		};
-		
+		var texture = THREE.ImageUtils.loadTexture(path);
+		texture.anisotropy = 16;
+		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: true, alignment: _alignment, transparent: true});
+		var hand = new THREE.Sprite(material);
+		hand.position.set(x, y, 0);
+		hand.scale.set(200, 256, 1.0); // imageWidth, imageHeight
+		return hand;
+	};
+
+	var initialize = function()
+	{	
 		var texture = THREE.ImageUtils.loadTexture('textures/humans/face.png');
 		texture.anisotropy = 16;
 		material = new THREE.MeshBasicMaterial({map: texture, color: 0xffffff, transparent : true});
@@ -196,11 +199,6 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 		disScene.add(l_hand);
 		r_hand = createHand('textures/humans/r_hand.png', window.innerWidth - window.innerWidth * 0.05, window.innerHeight + 180, THREE.SpriteAlignment.bottomRight);		
 		disScene.add(r_hand);
-		$('#skillMight').css('display', 'none');
-		$('#skillPush').css('display', 'none');
-		$('#skillPush').css('backgroundImage', 'linear-gradient(90deg, #008B8B 0%, #008B8B ' + 100 + '%, #00CDCD 0%, #00CDCD 100%');
-		$('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #2E8B57 0%, #2E8B57 ' + 100 + '%, #9AFF9A 0%, #9AFF9A 100%');
-		
 	};
 
 	initialize();
@@ -262,7 +260,11 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 				break;
 				
 			case 16: // shift
-				if(canJump && level > 0 && typeSkill == 0) isRunning = true; // ≈сли мы на земле, то включаем бег
+				if(canJump && level > 0 && typeSkill == 0)
+				{
+					isRunning = true; // ≈сли мы на земле, то включаем бег
+					skill = true;
+				}
 				break;
 				
 			case 81: //q доступно только на 3 уровне
@@ -271,7 +273,6 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 					skill = true;
 					skillPush = true;
 					SkillPush(objects);
-					$('#skillPush').css('backgroundImage', 'linear-gradient(90deg, #008B8B 0%, #008B8B ' + 0 + '%, #00CDCD 0%, #00CDCD 100%');
 				}
 				break;
 				
@@ -433,7 +434,7 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 		
 		bloodSprite.scale.set(71, 71 * FullBloodSprite / 71, 1.0);
 		bloodSprite.material.uvScale.y = FullBloodSprite / 71;
-		bloodSprite.position.set(window.innerWidth / 2 + 482 / 2 - 160, window.innerHeight - 8.5 - (35.5 - (71 * FullBloodSprite / 71) / 2), -10.0 );
+		bloodSprite.position.set(window.innerWidth / 2 + 482 / 2 - 160, window.innerHeight - 8 - (35.5 - (71 * FullBloodSprite / 71) / 2), -10.0 );
 		if(hp + 0.05 * delta < maxhp)
 		{
 			hp += 0.05 * delta;
@@ -463,7 +464,15 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 			}
 		}
 		if (scope.enabled === false) return;
-		if(typeSkill == 0) $('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #444488 0%, #444488 ' + (100 * (energy - usedEnergy) / energy) + '%, #884488 0%, #884488 100%');
+		if(typeSkill == 0)
+		{
+			if(level >= 1)
+			{
+				spriteSkillLevel2.scale.set(39, 45 * (energy - usedEnergy) / energy, 1.0);
+				spriteSkillLevel2.material.uvScale.y = (energy - usedEnergy) / energy;
+				spriteSkillLevel2.position.set( window.innerWidth / 2 - 113.5 + typeSkill * 50, window.innerHeight - 80 - 41 + (67.5 - 67.5 * (energy - usedEnergy) / energy), 0.0);
+			}		
+		}
 		
 		// ≈сли можно бежать, врубаем вторую
 		// ≈сли нельз€, едем на первой
@@ -521,7 +530,10 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 		if(skillPush)
 		{		
 			skillPushTime += delta;
-			$('#skillPush').css('backgroundImage', 'linear-gradient(90deg, #008B8B 0%, #008B8B ' + (100 * skillPushTime / 500) + '%, #00CDCD 0%, #00CDCD 100%');
+			
+			spriteSkillLevel3.scale.set(39, 45 * skillPushTime / 500, 1.0);
+			spriteSkillLevel3.material.uvScale.y = skillPushTime / 500;
+			spriteSkillLevel3.position.set( window.innerWidth / 2 - 113.5 + (typeSkillEnd + 2) * 50, window.innerHeight - 80 - 41 + (67.5 - 67.5 * skillPushTime / 500), 0.0);
 		}
 		
 		if(skillPushTime >= 500)
@@ -534,7 +546,10 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 		if(skillMight) 
 		{ 
 			skillMightCount += delta * 0.2;
-			$('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #2E8B57 0%, #2E8B57 ' + (100 * (50 - skillMightCount) / 50) + '%, #9AFF9A 0%, #9AFF9A 100%');
+			spriteSkillLevel2.scale.set(39, 45 * (50 - skillMightCount) / 50, 1.0);
+			spriteSkillLevel2.material.uvScale.y = (50 - skillMightCount) / 50; 
+			spriteSkillLevel2.position.set( window.innerWidth / 2 - 113.5 + typeSkill * 50, window.innerHeight - 80 - 41 + (67.5 - 67.5 * (50 - skillMightCount) / 50), 0.0);
+
 			if(skillMightCount > 50) 
 			{
 				skillMight = false;
@@ -549,7 +564,10 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 			else
 			{
 				skillMightTime += delta * 0.4;
-				$('#skillMight').css('backgroundImage', 'linear-gradient(90deg, #2E8B57 0%, #2E8B57 ' + (100 * skillMightTime / 500) + '%, #9AFF9A 0%, #9AFF9A 100%');
+
+				spriteSkillLevel2.scale.set(39, 45 * skillMightTime / 500, 1.0);
+				spriteSkillLevel2.material.uvScale.y = skillMightTime / 500;
+				spriteSkillLevel2.position.set( window.innerWidth / 2 - 113.5 + typeSkill * 50, window.innerHeight - 80 - 41 + (67.5 - 67.5 * skillMightTime / 500), 0.0);
 			}
 		}
 		
@@ -558,7 +576,10 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 			if(skillJumpTime < 500)
 			{
 				skillJumpTime += delta * 0.4;
-				$('#skillPush').css('backgroundImage', 'linear-gradient(90deg, #008B8B 0%, #008B8B ' + (100 * skillJumpTime / 500) + '%, #00CDCD 0%, #00CDCD 100%');
+
+				spriteSkillLevel3.scale.set(39, 45 * skillJumpTime / 500, 1.0);
+				spriteSkillLevel3.material.uvScale.y = skillJumpTime / 500;
+				spriteSkillLevel3.position.set( window.innerWidth / 2 - 114 + (typeSkillEnd + 2) * 50, window.innerHeight - 80 - 41 + (67.5 - 67.5 * skillJumpTime / 500), 0.0);
 			}
 			else
 			{
@@ -632,7 +653,7 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 		fullGun ++;
 	};
 	
-	this.encreaseEXP = function(delta, newExp, timeLevel)
+	this.encreaseEXP = function(delta, newExp, timeLevel, disScene)
 	{
 		exp += newExp;
 		if(FullBloodSprite + 0.167 * delta <= 71) FullBloodSprite += 0.167 * delta;
@@ -653,17 +674,20 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 				{
 					bestTime = timeLevel;
 					typeSkill = getRandomInt(0, 1);
-					if(typeSkill == 0) $('#textSkill').text('ƒрап');
-					else $('#textSkill').text('Ѕрон€');
-					
-					$('#skillMight').css('display', 'block');
+
+					spriteSkillLevel2 = createHand('textures/dis/skill.png', window.innerWidth / 2 - 113.5 + typeSkill * 50, window.innerHeight - 80 - 41, THREE.SpriteAlignment.topLeft);	
+					spriteSkillLevel2.scale.set(39, 45, 1.0);	
+					spriteSkillLevel2.material.uvScale.y = 1;	
+					disScene.add(spriteSkillLevel2);
 				}
 				if(level == 2)
 				{
 					typeSkillEnd = getRandomInt(0, 1);
-					if(typeSkillEnd == 0) $('#textSkillPush').text('”дарна€ волна');
-					else $('#textSkillPush').text('ѕрыжок смерти');
-					$('#skillPush').css('display', 'block');
+
+					spriteSkillLevel3 = createHand('textures/dis/skill.png', window.innerWidth / 2 - 113.5 + (typeSkillEnd + 2) * 50, window.innerHeight - 80 - 41, THREE.SpriteAlignment.topLeft);	
+					spriteSkillLevel3.scale.set(39, 45, 1.0);	
+					spriteSkillLevel3.material.uvScale.y = 1;	
+					disScene.add(spriteSkillLevel3);
 				}
 			}
 			else
@@ -764,5 +788,31 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 	this.setZeroRotation = function()
 	{
 		pitchObject.rotation.x = 0;
+	};
+
+	this.resize = function()
+	{
+		expSprite.position.set(window.innerWidth - 260 - 121.5 * exp / state_opt_level[level], 10,  0.0);
+		if(typeSkill == 0)
+		{
+			spriteSkillLevel2.position.set( window.innerWidth / 2 - 113.5 + typeSkill * 50, window.innerHeight - 80 - 41 + (67.5 - 67.5 * (energy - usedEnergy) / energy), 0.0);
+		}
+		if(typeSkill == 1)
+		{
+			spriteSkillLevel2.position.set( window.innerWidth / 2 - 113.5 + typeSkill * 50, window.innerHeight - 80 - 41 + (67.5 - 67.5 * (50 - skillMightCount) / 50), 0.0);
+		}
+		if(typeSkillEnd == 0)
+		{
+			spriteSkillLevel3.position.set( window.innerWidth / 2 - 113.5 + (typeSkillEnd + 2) * 50, window.innerHeight - 80 - 41, 0.0);
+		}
+		if(typeSkillEnd == 1)
+		{
+			spriteSkillLevel3.position.set( window.innerWidth / 2 - 114 + (typeSkillEnd + 2) * 50, window.innerHeight - 80 - 41, 0.0);
+		}
+		l_blood.position.set(-1000, window.innerHeight, 0);
+		r_blood.position.set(window.innerWidth + 1000, window.innerHeight, 0);
+
+		l_hand.position.set(window.innerWidth * 0.05, window.innerHeight + 180, 0);
+		r_hand.position.set(window.innerWidth - window.innerWidth * 0.05, window.innerHeight + 180, 0);
 	};
 };

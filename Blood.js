@@ -1,4 +1,4 @@
-var Blood = function()
+var Blood = function(loader)
 {
 	var blood;
 	var animator;
@@ -7,7 +7,8 @@ var Blood = function()
 	{
 		height = 0.01;
 
-		var texture = THREE.ImageUtils.loadTexture('textures/humans/blood.png');
+		var texture = loader.blood['./textures/humans/blood.png'].clone();
+		texture.needsUpdate = true;
 		texture.anisotropy = 16;
 		var material = new THREE.SpriteMaterial({map: texture, useScreenCoordinates: false, color: 0xffffff,  affectedByDistance: true});
 		blood = new THREE.Sprite(material);
