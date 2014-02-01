@@ -156,6 +156,7 @@ function ModelsLoader(surface, first)
 			if(first)
 			{
 				$('#myModal').modal('show');
+				sound.play();
 			}
 			else
 			{

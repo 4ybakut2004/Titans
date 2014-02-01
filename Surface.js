@@ -922,7 +922,5 @@ $(document).ready(function()
 	loader = new ModelsLoader(surface, true);
 	
 	sound = new Sound(['audio/1.ogg']);
-	sound.play();
-
 	soundEnd = new Sound(['audio/end.ogg']);
 });
