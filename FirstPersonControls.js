@@ -752,7 +752,7 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 		//if(bestTime <= maxbestTime && level != 0){ s.push(rungArray[8]); neloh ++; }
 		if(side >= maxside){ s.push(rungArray[9]); loh ++; }
 		
-		if(!skill && level != 0) s.push(rungArray[10]);
+		if(!skill && level != 0) { s.push(rungArray[10]); neloh++; }
 		
 		if(loh >= 3) s.push(rungArray[11]);
 		if(neloh >= 3) s.push(rungArray[12]);
