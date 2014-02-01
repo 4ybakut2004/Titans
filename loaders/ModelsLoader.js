@@ -45,7 +45,7 @@ function ModelsLoader(surface, first)
 		{'path': './textures/humans/blood.png',               'type': 'blood'},
 		{'path': './textures/redline.png',                    'type': 'redline'}
 	];
-
+	
 	var load = function(path)
 	{
 		switch(path.type)
@@ -87,18 +87,7 @@ function ModelsLoader(surface, first)
 					}
 
 					loadedModelsCount++;
-					$('.models-loading').eq(0).css('background', 'linear-gradient(90deg, #B0C4DE 0%, #B0C4DE ' + (100 * loadedModelsCount / modelsCount) + '%, #ffffff 0%, #ffffff 100%)');
-					if(loadedModelsCount < modelsCount)
-					{
-						load(paths[loadedModelsCount]);
-					}
-					else
-					{	
-						surface.start(scope);
-						$('.errorMgsFull').eq(0).css('display', '');
-						$('.models-loading').eq(0).css('display', 'none');
-						if(first) $('#myModal').modal('show');
-					}
+					startSurface();
 				});
 				break;
 				
@@ -112,18 +101,7 @@ function ModelsLoader(surface, first)
 			case 'redline':
 				scope[path.type][path.path] = THREE.ImageUtils.loadTexture(path.path, undefined, function(){
 					loadedModelsCount++;
-					$('.models-loading').eq(0).css('background', 'linear-gradient(90deg, #B0C4DE 0%, #B0C4DE ' + (100 * loadedModelsCount / modelsCount) + '%, #ffffff 0%, #ffffff 100%)');
-					if(loadedModelsCount < modelsCount)
-					{
-						load(paths[loadedModelsCount]);
-					}
-					else
-					{	
-						surface.start(scope);
-						$('.errorMgsFull').eq(0).css('display', '');
-						$('.models-loading').eq(0).css('display', 'none');
-						if(first) $('#myModal').modal('show');
-					}
+					startSurface();
 				});
 				break;
 
@@ -141,18 +119,7 @@ function ModelsLoader(surface, first)
 		            treeModel.castShadow = true;
 		            scope.treemodels.push(treeModel);
 		            loadedModelsCount++;
-					$('.models-loading').eq(0).css('background', 'linear-gradient(90deg, #B0C4DE 0%, #B0C4DE ' + (100 * loadedModelsCount / modelsCount) + '%, #ffffff 0%, #ffffff 100%)');
-					if(loadedModelsCount < modelsCount)
-					{
-						load(paths[loadedModelsCount]);
-					}
-					else
-					{	
-						surface.start(scope);
-						$('.errorMgsFull').eq(0).css('display', '');
-						$('.models-loading').eq(0).css('display', 'none');
-						if(first) $('#myModal').modal('show');
-					}
+					startSurface();
 		        });
 				break;
 			case 'fireTitan':
@@ -168,22 +135,34 @@ function ModelsLoader(surface, first)
 		            titanModel.castShadow = true;
 		            scope.fireTitan.push(titanModel);
 		            loadedModelsCount++;
-					$('.models-loading').eq(0).css('background', 'linear-gradient(90deg, #B0C4DE 0%, #B0C4DE ' + (100 * loadedModelsCount / modelsCount) + '%, #ffffff 0%, #ffffff 100%)');
-					if(loadedModelsCount < modelsCount)
-					{
-						load(paths[loadedModelsCount]);
-					}
-					else
-					{	
-						surface.start(scope);
-						$('.errorMgsFull').eq(0).css('display', '');
-						$('.models-loading').eq(0).css('display', 'none');
-						if(first) $('#myModal').modal('show');
-					}
+					startSurface();
 		        });
 				break;
 		}
 	};
+	
+	function startSurface()
+	{
+		$('.models-loading').css('background', 'linear-gradient(90deg, #B0C4DE 0%, #B0C4DE ' + (100 * loadedModelsCount / modelsCount) + '%, #ffffff 0%, #ffffff 100%)');
+		if(loadedModelsCount < modelsCount)
+		{
+			load(paths[loadedModelsCount]);
+		}
+		else
+		{	
+			surface.start(scope);
+			$('.errorMgsFull').css('display', 'block');
+			$('.models-loading').css('display', 'none');
+			if(first)
+			{
+				$('#myModal').modal('show');
+			}
+			else
+			{
+				$('.errorMgsFull').css('display', 'none');
+			}
+		}
+	}
 
 	load(paths[loadedModelsCount]);
 }

@@ -4,21 +4,21 @@
 
 var rungArray = new Array
 (
-"Ленивый титан - с места не сходил, но сражался достойно.<br/>",
-"Титан-мазохист - любитель садо-мазо с участием мечей и пушек.<br/>",
-"Титан попрыгунчик - прыгал по полю как зайчик. Очень большой зайчик.<br/>",
-"Титан-спринтер - гонял по полю так, будто стометровку сдавал.<br/>",
-"Неуязвимый титан - не Бронированный, а похож.<br/>",
-"Титан-кончился порох в пороховницах. Много шуму, да мало толка.<br/>",
-"Титан-жертва инквизиции - бойцы отправили на костёр, приняв за ведьму.<br/>",
-"Титан жнец - одним махом толпу убивахом.<br/>",
-"Титан-марафонец - пробежался по первому уровню так, будто там и преград-то никаких не было.<br/>",
-"Титан-шатун - пошёл туда, не знаю куда, принёс то, не знаю что/смерть и разрушение/добро и справедливость (нужное подчеркнуть).<br/>",
-"Суровый титан - превозмогал лишь своими силами.<br/>",
-"Истинный титан - ленился, шлялся и шумел без толку, полностью оправдывая своё имя. <br/>",
-"Вожак всех титанов - собрал в себе все лучшие титанские качества.<br/>",
-"Титан-ловкач - порхал между снарядов как бабочка.<br/>",
-"Титан-собери все патроны – лишил бойцов боеприпасов, героически собрав их своим телом.<br/>"
+"<b>Ленивый титан</b> - с места не сходил, но сражался достойно.",
+"<b>Титан-мазохист</b> - любитель садо-мазо с участием мечей и пушек.",
+"<b>Титан попрыгунчик</b> - прыгал по полю как зайчик. Очень большой зайчик.",
+"<b>Титан-спринтер</b> - гонял по полю так, будто стометровку сдавал.",
+"<b>Неуязвимый титан</b> - не Бронированный, а похож.",
+"<b>Титан-кончился порох в пороховницах.</b> Много шуму, да мало толка.",
+"<b>Титан-жертва инквизиции</b> - бойцы отправили на костёр, приняв за ведьму.",
+"<b>Титан жнец</b> - одним махом толпу убивахом.",
+"<b>Титан-марафонец</b> - пробежался по первому уровню так, будто там и преград-то никаких не было.",
+"<b>Титан-шатун</b> - пошёл туда, не знаю куда, принёс то, не знаю что/смерть и разрушение/добро и справедливость (нужное подчеркнуть).",
+"<b>Суровый титан</b> - превозмогал лишь своими силами.",
+"<b>Истинный титан</b> - ленился, шлялся и шумел без толку, полностью оправдывая своё имя.",
+"<b>Вожак всех титанов</b> - собрал в себе все лучшие титанские качества.",
+"<b>Титан-ловкач</b> - порхал между снарядов как бабочка.",
+"<b>Титан-собери все патроны</b> – лишил бойцов боеприпасов, героически собрав их своим телом."
 );
 
 THREE.FirstPersonControls = function(camera, borders, minS, disScene) 
@@ -296,7 +296,7 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 			for(var i = 0; i < objects.length; i++)
 			{
 				var distance = Math.pow(Math.pow(yawObject.position.x - objects[i].getMesh(1).position.x, 2) + Math.pow(yawObject.position.z - objects[i].getMesh(1).position.z, 2), 0.5);
-				if(distance < 0.04)
+				if(distance < 0.04 && !objects[i].getFlying())
 				{
 					objects[i].setBlood(true);
 				}
@@ -419,7 +419,7 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 	};
 
 	
-	this.update = function(delta) 
+	this.update = function(delta, enabled) 
 	{	
 		delta *= 0.1;
 		if(exp > 0)
@@ -513,15 +513,19 @@ THREE.FirstPersonControls = function(camera, borders, minS, disScene)
 		velocity.y -= 0.25 * delta / coordDivisor;
 
 		// Двигаем объект
-		yawObject.translateX(velocity.x);
-		yawObject.translateY(velocity.y); 
-		yawObject.translateZ(velocity.z);
-		
-		mini_titan.position.x = yawObject.position.x;
-		mini_titan.position.z = yawObject.position.z;
-		
-		var distDelta = delta * Math.pow(velocity.x*velocity.x + velocity.z*velocity.z, 0.5);
-		distance += distDelta;
+		if(enabled)
+		{
+			yawObject.translateX(velocity.x); 
+			yawObject.translateZ(velocity.z);
+			
+			mini_titan.position.x = yawObject.position.x;
+			mini_titan.position.z = yawObject.position.z;
+			
+			var distDelta = delta * Math.pow(velocity.x*velocity.x + velocity.z*velocity.z, 0.5);
+			distance += distDelta;
+		}
+		yawObject.translateY(velocity.y);
+
 		if(isRunning)
 		{
 			running += distDelta;

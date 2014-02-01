@@ -21,7 +21,7 @@ var Dislocations =
 	Terrain: 1
 };
 
-var state_titan = new Array ("Сутпень развития: Безмозглый", "Сутпень развития: Среднячок", "Сутпень развития: Разумный");
+var state_titan = new Array ("<b>Ступень:</b> Безмозглый", "<b>Ступень:</b> Среднячок", "<b>Ступень:</b> Разумный");
  
 var level_up = 0;
 var game_over_flag = 0;
@@ -381,6 +381,39 @@ var Surface = function()
 		$(window).bind('keydown', onDocumentKeyDown);
 	};
 
+	this.clear = function()
+	{
+		var obj, i;
+		for (i = scene.children.length - 1; i >= 0 ; i--)
+		{
+		    obj = scene.children[ i ];
+		    scene.remove(obj);
+
+		    if(obj.material)
+		    {
+		    	if(obj.material.map)
+		    	{
+		    		if(obj.material.map.dispose)
+		    		{
+		    			obj.material.map.dispose();
+		    		}
+		    	}
+		    	if(obj.material.dispose)
+		    	{
+		    		obj.material.dispose();
+		    	}
+		    }
+
+		    if(obj.geometry)
+		    {
+		    	if(obj.geometry.dispose)
+		    	{
+		    		obj.geometry.dispose();
+		    	}
+		    }
+		}
+	}
+	
 	var anl = 0;
 	var render = function() 
 	{
@@ -390,13 +423,19 @@ var Surface = function()
 
 		if(prioritet>0 && !controls.getTheEnd())
 		{
+			if(index == 0 && firstError)
+			{
+				$('.leaning').eq(index).css('display', 'block');
+				$('#bouble').css('display', 'block');
+			}
+
 			if(controls.getHP() <= 0)
 			{
 				gameOver(state_titan[controls.getLevel()], controls.getEXPpart(), controls.getRung(), controls.getLevel());
 			}
 
 			// Обрабатываем движение главного героя
-			controls.update(delta);	
+			controls.update(delta, (index >= 3));	
 			controls.collision(objects);
 			if((controls.getLevel() == 1 && controls.getObject().position.z > 0.9) || 
 			   (controls.getLevel() == 2 && (controls.getObject().position.z > 0.9 || controls.getObject().position.z < -0.9 ||
@@ -705,7 +744,7 @@ function pointerLockChange()
 		{
 			$('.leaning').eq(index).css('display', 'block');
 			$('#bouble').css('display', 'block');
-			$('.errorMgsFull').eq(0).css('display', 'none');
+			$('.errorMgsFull').css('display', 'none');
 			firstError = true;
 		}
 	} 
@@ -753,7 +792,8 @@ function gameOver(level_over, oput_over, sp, endLevel)
 	game_over_flag = 1;
 
 	var g = "";
-	var s = "<div style = \"background-color: #FFFFFF; width: 350px; height: \"";
+	var s = "<div style=\"background-color: #9d906d; padding:15px; border-radius: 7px; -moz-border-radius: 7px; -webkit-border-radius: 7px; -o-border-radius: 7px; width:386px; box-shadow: 0px 0px 40px #372d1f\">";
+	s += "<div style=\"background-color: #372d1f; border: 3px #382b20 solid; width:350px; padding:15px; border-radius: 7px; -moz-border-radius: 7px; -webkit-border-radius: 7px; -o-border-radius: 7px; color: #d8cdaa\">";
 
 	if(endLevel == 1)
 	{
@@ -765,9 +805,9 @@ function gameOver(level_over, oput_over, sp, endLevel)
 	}
 	if(sp.length == 0)
 	{
-		s += "190px\">";
+		//s += "190px\">";
 		
-		s += "<table CELLPADDING = 5 > <tr><td align =  \"center\"> Титан-тамагочи! </td>";
+		s += "<table CELLPADDING = 3 > <tr><td align=\"center\"> <img src=\"http://i.pixs.ru/storage/8/6/0/zagolovokp_2322020_10697860.png\"></td>";
 		g += "<table CELLPADDING = 5 style = \"width: 98%;\">";
 		
 		g += "<tr><td style = \"padding-left: 40px;\">" + level_over  + "</td></tr>";
@@ -777,26 +817,26 @@ function gameOver(level_over, oput_over, sp, endLevel)
 		g += "<tr><td align = \"center\">Увы, ваша игра не смогла ничем выделиться.</td></tr>";
 		
 		s += "<tr><td>" + level_over  + "</td></tr>";
-		s += "<tr><td>Опыт: " + Math.round(oput_over) + "</td></tr>";
+		s += "<tr><td><b>Опыт:</b> " + Math.round(oput_over) + "</td></tr>";
 		s += "<tr><td align = \"center\"><b>Звания</b></td></tr>";
-		s += "<tr><td>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspУвы, ваша игра не смогла ничем выделиться.</td></tr>"; //
+		s += "<tr><td>&nbsp&nbsp&nbsp&nbsp&nbsp&nbspУвы, ваша игра не смогла ничем выделиться.</td></tr>"; //
 	}
 	else
 	{
 		var len = 220;
 		for(var i = 1 ; i < sp.length; i++) len += 35; 
 		
-		s += len.toString() + "px\">";
+		//s += len.toString() + "px\">";
 		
-		s += "<table CELLPADDING = 5> <tr><td align =  \"center\"> Титан-тамагочи! </td>";
+		s += "<table CELLPADDING = 3 > <tr><td align=\"center\"> <img src=\"http://i.pixs.ru/storage/8/6/0/zagolovokp_2322020_10697860.png\"></td>";
 		g += "<table CELLPADDING = 5 style = \"width: 98%;\">";
 	
 		g += "<tr><td style = \"padding-left: 40px;\">" + level_over  + "</td></tr>";
-		g += "<tr><td style = \"padding-left: 40px;\">Опыт: " + Math.round(oput_over) + "</td></tr>";
+		g += "<tr><td style = \"padding-left: 40px;\"><b>Опыт:</b> " + Math.round(oput_over) + "</td></tr>";
 		g += "<tr><td align = \"center\"><b style = \"font-size: 18px;\">Звания</b></td></tr>"; 
 		
 		s += "<tr><td>" + level_over  + "</td></tr>";
-		s += "<tr><td>Опыт: " + Math.round(oput_over) + "</td></tr>";
+		s += "<tr><td><b>Опыт:</b> " + Math.round(oput_over) + "</td></tr>";
 		s += "<tr><td align = \"center\"><b>Звания</b></td></tr>";
 		
 		for(var i = 0 ; i < sp.length; i++) s += "<tr><td>" + sp[i] + "</td></tr>";
@@ -806,8 +846,8 @@ function gameOver(level_over, oput_over, sp, endLevel)
 	g += "</table>";
 	$('#textOver').html(g);
 	
-	s += "<tr><td align =  \"center\"><a href = \"\"> Играть </a></td></tr>";
-	s += "</table></div>";
+	s += "<tr><td align=\"center\"><a href=\"http://titan-tamagotchi.herokuapp.com/\" target=_blank> <img src=\"http://i7.pixs.ru/storage/8/7/1/80410207pn_3066397_10697871.png\"></a></td></tr>";
+	s += "</table></div></div>";
 	$('#relis').text(s);
 }
 
@@ -836,7 +876,10 @@ function lockPointer()
 
 function restart()
 {
+	surface.clear();
+	
 	game_over_flag = 0;
+	index = 0;
 	
 	if(!sound.getPause())
 	{
@@ -846,17 +889,12 @@ function restart()
 	
 	surface.stop_render();
 	
-	$('.errorMgsFull').eq(0).css('display', 'none');
-	$('.models-loading').eq(0).css('display', '');
+	$('.errorMgsFull').css('display', 'none');
+	$('.models-loading').css('display', 'block');
 	$('#bouble').css('display', 'none');
-	for(var i = 0; i < 3; i++)
-	{
-		$('.leaning').eq(i).css('display', 'none');
-	}
+	$('.leaning').css('display', 'none');
 	surface = new Surface();
 	loader  = new ModelsLoader(surface, false);
-	if(firstError) $('.errorMgsFull').eq(0).css('display', 'none');
-	index = 0;
 	lockPointer();
 }
 
@@ -878,13 +916,13 @@ $(document).ready(function()
 		return;
 	}
 
-	$('.errorMgsFull').eq(0).css('display', 'none');
-	$('.models-loading').eq(0).css('display', 'block');
+	$('.errorMgsFull').css('display', 'none');
+	$('.models-loading').css('display', 'block');
 	surface = new Surface();
 	loader = new ModelsLoader(surface, true);
 	
 	sound = new Sound(['audio/1.ogg']);
-	//sound.play();
+	sound.play();
 
 	soundEnd = new Sound(['audio/end.ogg']);
 });
