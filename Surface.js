@@ -900,6 +900,8 @@ function restart()
 
 $(document).ready(function() 
 {
+	$('.errorMgsFull').css('display', 'none');
+	
 	// Проверка поддержки веб джееля
 	if(!Detector.webgl)
 	{
@@ -916,7 +918,6 @@ $(document).ready(function()
 		return;
 	}
 
-	$('.errorMgsFull').css('display', 'none');
 	$('.models-loading').css('display', 'block');
 	surface = new Surface();
 	loader = new ModelsLoader(surface, true);

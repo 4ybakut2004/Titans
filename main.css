@@ -144,13 +144,14 @@ a:hover
 .errorMgs
 {
 	position: absolute; 
-	width: 600px; 
-	height: 90px;
-	display: none;
-	border: double #8B4513 4px;
-	padding: 7px;
+	width: 650px; 
+	height: 200px;
 	background-color: #ffffff; 
-    margin: 0 25% 0 25%;
+    margin-left: 25%;
+	margin-right: 25%;
+	margin-top: 150px;
+	color: #aaaaaa;
+	display: none;
 }
 
 .errorMgsFull
